@@ -49,6 +49,16 @@ android {
 
     packagingOptions.jniLibs.useLegacyPackaging = true
 
+    // 定制版仅面向单台 arm64 设备（真我 GT Neo5 240W）。
+    // media_kit_libs_video 等依赖通过 AAR 带入 armeabi-v7a / x86_64 的 libmpv.so，
+    // 这些 so 不走 NDK 编译，故 ndk.abiFilters 管不到，必须在此显式排除，
+    // 可省掉约 30MB 无用原生库。
+    packagingOptions.jniLibs.excludes += listOf(
+        "lib/armeabi-v7a/**",
+        "lib/x86/**",
+        "lib/x86_64/**",
+    )
+
     val keyProperties = Properties().also {
         val properties = rootProject.file("key.properties")
         if (properties.exists())
