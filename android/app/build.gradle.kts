@@ -39,7 +39,7 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
-        // 定制版仅面向单台 arm64 设备（真我 GT Neo5 240W）。
+        // 定制版仅面向 arm64 设备。
         // 限定 ABI 可剔除 media_kit 等依赖携带的 armeabi-v7a / x86_64 原生库，
         // 显著减小安装包体积（主要省掉 ~30MB 的多架构 libmpv.so）。
         ndk {
@@ -49,7 +49,7 @@ android {
 
     packagingOptions.jniLibs.useLegacyPackaging = true
 
-    // 定制版仅面向单台 arm64 设备（真我 GT Neo5 240W）。
+    // 定制版仅面向 arm64 设备。
     // media_kit_libs_video 等依赖通过 AAR 带入 armeabi-v7a / x86_64 的 libmpv.so，
     // 这些 so 不走 NDK 编译，故 ndk.abiFilters 管不到，必须在此显式排除，
     // 可省掉约 30MB 无用原生库。
