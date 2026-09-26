@@ -157,3 +157,6 @@ test*
 # APK / AAB 打包产物
 *.apk
 *.aab
+# API 推送中间产物
+.api_push_cache.json
+api_push*.py
