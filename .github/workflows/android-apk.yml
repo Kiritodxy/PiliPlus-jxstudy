@@ -1,0 +1,121 @@
+name: Build Android APK
+
+# 手动触发：Actions 页面点 "Run workflow" 即可出包
+# 也可以打 tag 自动发 Release
+on:
+    workflow_dispatch:
+        inputs:
+            tag:
+                description: "发布 tag（填了就创建 Release 并把 APK 挂上去，例如 v2.1.4-custom.5；留空则只产出 Artifact）"
+                required: false
+                default: ""
+                type: string
+
+    push:
+        tags:
+            - "v*"
+
+permissions:
+    contents: write
+
+jobs:
+    android:
+        name: 构建 Android APK
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: 代码迁出
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: 构建 Java 环境
+              uses: actions/setup-java@v4
+              with:
+                  distribution: "zulu"
+                  java-version: "17"
+                  cache: "gradle"
+                  cache-dependency-path: |
+                      android/*.gradle*
+                      android/**/gradle-wrapper.properties
+
+            - name: 安装 Flutter
+              uses: subosito/flutter-action@v2
+              id: flutter-action
+              with:
+                  channel: stable
+                  flutter-version-file: pubspec.yaml
+                  cache: true
+
+            # 给 Flutter SDK / material_ui 打项目自带补丁（等价于官方 CI 的 patch.ps1）
+            - name: 应用源码补丁
+              shell: pwsh
+              run: lib/scripts/patch.ps1 android
+
+            # 可选：配置正式签名。未配置时脚本会走 debug 签名，APK 依然可以安装
+            - name: 写入签名密钥（未配置 secrets 时跳过）
+              run: |
+                  if [ -n "${{ secrets.SIGN_KEYSTORE_BASE64 }}" ]; then
+                    echo "${{ secrets.SIGN_KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
+                    echo storeFile='key.jks' >> android/key.properties
+                    echo storePassword='${{ secrets.KEYSTORE_PASSWORD }}' >> android/key.properties
+                    echo keyAlias='${{ secrets.KEY_ALIAS }}' >> android/key.properties
+                    echo keyPassword='${{ secrets.KEY_PASSWORD }}' >> android/key.properties
+                    echo "✅ 已使用正式签名密钥"
+                  else
+                    echo "ℹ️ 未配置 SIGN_KEYSTORE_BASE64，本次使用 debug 签名"
+                  fi
+
+            - name: 生成版本信息
+              shell: pwsh
+              run: lib/scripts/build.ps1 android
+
+            - name: 拉取依赖
+              run: flutter pub get
+
+            - name: 构建 Release APK（按 ABI 拆分）
+              run: flutter build apk --release --split-per-abi --dart-define-from-file=pili_release.json --no-pub
+
+            - name: 重命名产物
+              run: |
+                  mkdir -p dist
+                  for file in build/app/outputs/flutter-apk/app-*-release.apk; do
+                    abi=$(echo "$file" | sed -E 's|.*app-(.*)-release\.apk|\1|')
+                    cp "$file" "dist/PiliPlus_jxstudy_${abi}.apk"
+                  done
+                  ls -lh dist/
+
+            - name: 上传构建产物（Artifact）
+              uses: actions/upload-artifact@v4
+              with:
+                  name: PiliPlus-jxstudy-apk
+                  path: dist/*.apk
+                  if-no-files-found: error
+
+            - name: 发布 Release（仅在填写 tag 或推送 v* 标签时）
+              if: ${{ github.event.inputs.tag != '' || startsWith(github.ref, 'refs/tags/v') }}
+              uses: softprops/action-gh-release@v2
+              with:
+                  tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+                  name: ${{ github.event.inputs.tag || github.ref_name }}
+                  files: dist/*.apk
+                  generate_release_notes: true
+                  body: |
+                      ## PiliPlus 江西学习守护版 ${{ github.event.inputs.tag || github.ref_name }}
+
+                      基于 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus) 的定制安卓客户端，
+                      面向**江西新高考（3+1+2）物化生选科**的学生使用。
+
+                      ### 本次构建
+                      - 学习白名单：621 条关键词（江西用卷口径：语数外新课标Ⅰ卷 + 理化生江西卷）
+                      - 内置白名单在首次安装后即刻生效，清除 App 数据也不会丢失
+
+                      ### 安装说明
+                      按手机 CPU 架构选择（绝大多数手机用 arm64-v8a）：
+                      - `arm64-v8a` — 主流机型（推荐）
+                      - `armeabi-v7a` — 老旧 32 位机型
+                      - `x86_64` — 模拟器
+
+                      ### 已声明的边界
+                      - APK 未配置正式签名时使用 debug 签名，安装时若提示风险属正常现象
+                      - 白名单采用「包含匹配」：搜索词中只要出现词库条目即放行
