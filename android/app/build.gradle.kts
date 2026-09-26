@@ -38,6 +38,13 @@ android {
         targetSdk = 37
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // 定制版仅面向单台 arm64 设备（真我 GT Neo5 240W）。
+        // 限定 ABI 可剔除 media_kit 等依赖携带的 armeabi-v7a / x86_64 原生库，
+        // 显著减小安装包体积（主要省掉 ~30MB 的多架构 libmpv.so）。
+        ndk {
+            abiFilters += listOf("arm64-v8a")
+        }
     }
 
     packagingOptions.jniLibs.useLegacyPackaging = true
