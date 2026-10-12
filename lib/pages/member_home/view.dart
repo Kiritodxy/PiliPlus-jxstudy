@@ -244,45 +244,6 @@ class _MemberHomeState extends State<MemberHome>
     };
   }
 
-  Widget? get _buildLiveItem {
-    final live = _ctr.live;
-    if (live != null && live.roomStatus == 1 && live.liveStatus != 1) {
-      return SliverToBoxAdapter(
-        child: Padding(
-          padding: const .only(top: 20),
-          child: _LiveItem(
-            color: colorScheme.surfaceContainerHigh,
-            child: GestureDetector(
-              behavior: .opaque,
-              onTap: () => PageUtils.toLiveRoom(live.roomid),
-              child: Padding(
-                padding: const .symmetric(vertical: 11),
-                child: Text.rich(
-                  TextSpan(
-                    children: [
-                      WidgetSpan(
-                        alignment: .middle,
-                        child: Icon(
-                          size: 18,
-                          Icons.bar_chart_rounded,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const TextSpan(text: ' TA现在并没有直播，去TA直播间'),
-                    ],
-                  ),
-                  textAlign: .center,
-                  style: TextStyle(color: colorScheme.onSurfaceVariant),
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-    return null;
-  }
-
   Widget _header(
     Color color, {
     required String title,

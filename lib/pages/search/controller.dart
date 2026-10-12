@@ -119,12 +119,7 @@ class SSearchController extends GetxController {
       '/searchResult',
       parameters: {'tag': tag, 'keyword': text},
       arguments: {'initIndex': initIndex, 'fromSearch': true},
-    )?.then((val) {
-      searchFocusNode.requestFocus();
-      if (val is bool && val) {
-        onValueChanged(text);
-      }
-    });
+    )?.whenComplete(searchFocusNode.requestFocus);
   }
 
   void onClickKeyword(String keyword) {

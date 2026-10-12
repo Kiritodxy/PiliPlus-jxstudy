@@ -7,6 +7,7 @@ import 'package:PiliPlus/models_new/history/list.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -207,6 +208,8 @@ class HistoryItem extends StatelessWidget {
   Widget content(ThemeData theme) {
     // 定制版：实际观看时长（供下方显示）
     final hasDuration = item.duration != null && item.duration != 0;
+    int aid = item.history.oid!;
+    String bvid = item.history.bvid ?? IdUtils.av2bv(aid);
     return Expanded(
       child: Column(
         spacing: 2,
