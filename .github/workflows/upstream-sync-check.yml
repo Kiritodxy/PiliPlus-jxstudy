@@ -1,0 +1,117 @@
+name: Upstream Sync Check
+
+# 定时检测上游 bggRGjQaUbCoE/PiliPlus 是否有新提交：
+#   - 无新提交 -> 立即结束
+#   - 有新提交且可自动合并 -> 创建分支 + PR（不直接改 main）
+#   - 有新提交但有冲突 -> 开 Issue 列出冲突文件清单
+on:
+    schedule:
+        # 每天 10:00 (北京时间)
+        - cron: '0 2 * * *' 
+    workflow_dispatch:
+
+permissions:
+    contents: write
+    pull-requests: write
+    issues: write
+
+jobs:
+    sync-check:
+        name: 检测上游更新
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: 代码迁出
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: 抓取上游
+              id: fetch
+              run: |
+                  git remote add upstream https://github.com/bggRGjQaUbCoE/PiliPlus.git 2>/dev/null || true
+                  git fetch upstream main --no-tags --quiet
+                  BEHIND=$(git rev-list --count HEAD..upstream/main)
+                  EXTRA=$(git rev-list --count upstream/main..HEAD)
+                  SHORT=$(git rev-parse --short upstream/main)
+                  echo "behind=$BEHIND" >> $GITHUB_OUTPUT
+                  echo "short=$SHORT" >> $GITHUB_OUTPUT
+                  echo "已落后上游 $BEHIND 个提交（上游 HEAD=$SHORT），本地独有 $EXTRA 个提交"
+
+            - name: 变更赘述
+              if: steps.fetch.outputs.behind != '0'
+              run: |
+                  {
+                    echo '### 上游新增提交'
+                    echo ''
+                    git log --oneline --no-decorate HEAD..upstream/main | head -30
+                    echo ''
+                    echo '### 改动规模'
+                    git diff --shortstat HEAD upstream/main
+                    echo ''
+                    echo '### 新增改动文件数'
+                    git diff --name-only HEAD upstream/main | wc -l
+                  } > /tmp/upstream_report.md
+                  cat /tmp/upstream_report.md
+
+            - name: 试探合并
+              id: trial
+              if: steps.fetch.outputs.behind != '0'
+              run: |
+                  git config user.name 'github-actions[bot]'
+                  git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+                  BRANCH="sync/upstream-${GITHUB_RUN_ID}"
+                  git checkout -b "$BRANCH"
+                  if git merge --no-commit --no-ff upstream/main > /tmp/merge.log 2>&1; then
+                    echo "clean=true" >> $GITHUB_OUTPUT
+                  else
+                    echo "clean=false" >> $GITHUB_OUTPUT
+                  fi
+                  git diff --name-only --diff-filter=U | sort > /tmp/conflicts.txt || true
+                  echo "conflicts=$(wc -l < /tmp/conflicts.txt)" >> $GITHUB_OUTPUT
+                  echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+                  echo '--- 冲突文件 ---'
+                  cat /tmp/conflicts.txt || true
+
+            - name: 无冲突 -> 提交并创建 PR
+              if: steps.fetch.outputs.behind != '0' && steps.trial.outputs.clean == 'true'
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  git commit -q -m "chore: 合并上游 ${{ steps.fetch.outputs.short }}"
+                  git push -q origin "${{ steps.trial.outputs.branch }}"
+                  gh pr create \
+                    --base main \
+                    --head "${{ steps.trial.outputs.branch }}" \
+                    --title "同步上游 PiliPlus ${{ steps.fetch.outputs.short }}（自动合并无冲突）" \
+                    --body-file /tmp/upstream_report.md
+
+            - name: 有冲突 -> 开 Issue 提醒
+              if: steps.fetch.outputs.behind != '0' && steps.trial.outputs.clean != 'true'
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  {
+                    cat /tmp/upstream_report.md
+                    echo ''
+                    echo '### 冲突文件（${{ steps.trial.outputs.conflicts }} 个）'
+                    echo ''
+                    echo '```'
+                    cat /tmp/conflicts.txt
+                    echo '```'
+                    echo ''
+                    echo '### 手动合并步骤'
+                    echo ''
+                    echo '```bash'
+                    echo 'git fetch upstream'
+                    echo 'git merge upstream/main'
+                    echo '# 逐个解决上述冲突文件后：git add -A && git commit'
+                    echo '```'
+                  } > /tmp/issue_body.md
+                  TITLE="上游更新需手动合并（${{ steps.fetch.outputs.short }}，${{ steps.trial.outputs.conflicts }} 个冲突文件）"
+                  if gh issue list --state open --search "$TITLE in:title" --json number --jq '.[0].number' | grep -q '[0-9]'; then
+                    echo 'Issue 已存在，追加评论'
+                    gh issue comment "$(gh issue list --state open --search "$TITLE in:title" --json number --jq '.[0].number')" --body-file /tmp/issue_body.md
+                  else
+                    gh issue create --title "$TITLE" --body-file /tmp/issue_body.md
+                  fi
