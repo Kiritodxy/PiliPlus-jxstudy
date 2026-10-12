@@ -19,7 +19,6 @@ import 'package:PiliPlus/models_new/video/video_detail/desc_v2.dart';
 import 'package:PiliPlus/models_new/video/video_detail/staff.dart';
 import 'package:PiliPlus/models_new/video/video_detail/stat.dart';
 import 'package:PiliPlus/models_new/video/video_tag/data.dart';
-import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
@@ -949,13 +948,6 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
             color: colorScheme.outline,
           ),
         ),
-        if (MineController.anonymity.value)
-          Icon(
-            MdiIcons.incognito,
-            size: 15,
-            color: colorScheme.outline,
-            semanticLabel: '无痕',
-          ),
         if (introController.isShowOnlineTotal)
           Obx(
             () => Text(

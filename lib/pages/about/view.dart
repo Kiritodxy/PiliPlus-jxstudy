@@ -10,7 +10,6 @@ import 'package:PiliPlus/common/widgets/dialog/export_import.dart';
 import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/services/logger.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
@@ -24,7 +23,6 @@ import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/update.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -139,7 +137,6 @@ class _AboutPageState extends State<AboutPage> {
             ),
           ),
           ListTile(
-            onTap: () => Update.checkUpdate(false),
             onLongPress: () => Utils.copyText(currentVersion),
             onSecondaryTap: PlatformUtils.isMobile
                 ? null
@@ -249,7 +246,6 @@ Commit Hash: ${BuildConfig.commitHash}''',
                 );
                 await Accounts.account.putAll(res);
                 await Accounts.refresh();
-                MineController.anonymity.value = !Accounts.heartbeat.isLogin;
                 if (Accounts.main.isLogin) {
                   await LoginUtils.onLoginMain();
                 }

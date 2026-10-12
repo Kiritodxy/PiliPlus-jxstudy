@@ -12,7 +12,6 @@ import 'package:PiliPlus/common/widgets/stateful_builder.dart';
 import 'package:PiliPlus/models/common/bar_hide_type.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
-import 'package:PiliPlus/models/common/home_tab_type.dart';
 import 'package:PiliPlus/models/common/mine_tab_type.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
@@ -138,61 +137,6 @@ List<SettingsModel> get styleSettings => [
     leading: Icon(Icons.dark_mode_outlined),
     setKey: SettingBoxKey.darkVideoPage,
     defaultVal: false,
-  ),
-  SwitchModel(
-    title: '动态页启用瀑布流',
-    subtitle: '关闭会显示为单列',
-    leading: const Icon(Icons.view_array_outlined),
-    setKey: SettingBoxKey.dynamicsWaterfallFlow,
-    defaultVal: Pref.horizontalScreen,
-    needReboot: true,
-  ),
-  PopupModel(
-    title: '动态页UP主显示位置',
-    leading: const Icon(Icons.person_outlined),
-    value: () => Pref.upPanelPosition,
-    items: UpPanelPosition.values,
-    onSelected: (value, setState) {
-      GStorage.setting
-          .put(SettingBoxKey.upPanelPosition, value.index)
-          .whenComplete(setState);
-      SmartDialog.showToast('重启生效');
-    },
-  ),
-  const SwitchModel(
-    title: '动态页显示所有已关注UP主',
-    leading: Icon(Icons.people_alt_outlined),
-    setKey: SettingBoxKey.dynamicsShowAllFollowedUp,
-    defaultVal: false,
-    needReboot: true,
-  ),
-  const SwitchModel(
-    title: '动态页展开正在直播UP列表',
-    leading: Icon(Icons.live_tv),
-    setKey: SettingBoxKey.expandDynLivePanel,
-    defaultVal: false,
-    needReboot: true,
-  ),
-  PopupModel(
-    title: '动态未读标记',
-    leading: const Icon(Icons.motion_photos_on_outlined),
-    value: () => Pref.dynamicBadgeType,
-    items: DynamicBadgeMode.values,
-    onSelected: _setDynBadge,
-  ),
-  PopupModel(
-    title: '消息未读标记',
-    leading: const Icon(MdiIcons.bellBadgeOutline),
-    value: () => Pref.msgBadgeMode,
-    items: DynamicBadgeMode.values,
-    onSelected: _setMsgBadge,
-  ),
-  NormalModel(
-    onTap: _showMsgUnReadDialog,
-    title: '消息未读类型',
-    leading: const Icon(MdiIcons.bellCogOutline),
-    getSubtitle: () =>
-        '当前消息类型：${Pref.msgUnReadTypeV2.map((item) => item.title).join('、')}',
   ),
   PopupModel(
     title: '顶/底栏收起类型',
@@ -332,19 +276,7 @@ List<SettingsModel> get styleSettings => [
     leading: Icon(Icons.chrome_reader_mode_outlined),
     onTap: _showSpringDialog,
   ),
-  NormalModel(
-    onTap: (context, setState) => Get.toNamed(
-      '/barSetting',
-      arguments: {
-        'key': SettingBoxKey.tabBarSort,
-        'defaultBars': HomeTabType.values,
-        'title': '首页标签页',
-      },
-    ),
-    title: '首页标签页',
-    subtitle: '删除或调换首页标签页',
-    leading: const Icon(Icons.toc_outlined),
-  ),
+  // 定制版：首页已移除全部标签页，不再提供"首页标签页"排序设置
   NormalModel(
     onTap: (context, setState) => Get.toNamed(
       '/barSetting',
@@ -674,52 +606,6 @@ Future<void> _showCardWidthDialog(
       SettingBoxKey.smallCardWidth: res.$2,
     });
     SmartDialog.showToast('重启生效');
-    setState();
-  }
-}
-
-void _setDynBadge(DynamicBadgeMode value, VoidCallback setState) {
-  final mainController = Get.find<MainController>()..dynamicBadgeMode = value;
-  if (value != DynamicBadgeMode.hidden) mainController.getUnreadDynamic();
-  GStorage.setting
-      .put(SettingBoxKey.dynamicBadgeMode, value.index)
-      .whenComplete(setState);
-}
-
-Future<void> _setMsgBadge(DynamicBadgeMode value, VoidCallback setState) async {
-  final mainController = Get.find<MainController>()..msgBadgeMode = value;
-  if (value != DynamicBadgeMode.hidden) {
-    mainController.queryUnreadMsg(true);
-  } else {
-    mainController.clearUnreadMsg();
-  }
-  GStorage.setting
-      .put(SettingBoxKey.msgBadgeMode, value.index)
-      .whenComplete(setState);
-}
-
-Future<void> _showMsgUnReadDialog(
-  BuildContext context,
-  VoidCallback setState,
-) async {
-  final res = await showDialog<Set<MsgUnReadType>>(
-    context: context,
-    builder: (context) => MultiSelectDialog<MsgUnReadType>(
-      title: '消息未读类型',
-      initValues: Pref.msgUnReadTypeV2,
-      values: {for (final i in MsgUnReadType.values) i: i.title},
-    ),
-  );
-  if (res != null) {
-    final mainController = Get.find<MainController>()..msgUnReadTypes = res;
-    if (mainController.msgBadgeMode != DynamicBadgeMode.hidden) {
-      mainController.queryUnreadMsg();
-    }
-    await GStorage.setting.put(
-      SettingBoxKey.msgUnReadTypeV2,
-      res.map((item) => item.index).toList()..sort(),
-    );
-    SmartDialog.showToast('设置成功');
     setState();
   }
 }

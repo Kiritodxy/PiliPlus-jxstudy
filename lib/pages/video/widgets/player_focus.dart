@@ -19,7 +19,7 @@ class PlayerFocus extends StatelessWidget {
     required this.child,
     required this.plPlayerController,
     this.introController,
-    required this.onSendDanmaku,
+    // 定制版：弹幕功能已移除（onSendDanmaku 回调）
     this.canPlay,
     this.onSkipSegment,
     this.onRefresh,
@@ -28,7 +28,8 @@ class PlayerFocus extends StatelessWidget {
   final Widget child;
   final PlPlayerController plPlayerController;
   final CommonIntroController? introController;
-  final VoidCallback onSendDanmaku;
+  // 定制版：弹幕功能已移除
+  // final VoidCallback onSendDanmaku;
   final ValueGetter<bool>? canPlay;
   final ValueGetter<bool>? onSkipSegment;
   final VoidCallback? onRefresh;
@@ -221,7 +222,7 @@ class PlayerFocus extends StatelessWidget {
           if (onSkipSegment?.call() ?? false) {
             return true;
           }
-          onSendDanmaku();
+          // 定制版：弹幕功能已移除（回车发弹幕）
           return true;
       }
 

@@ -14,17 +14,14 @@ import 'package:PiliPlus/models_new/space/space/card.dart';
 import 'package:PiliPlus/models_new/space/space/elec.dart';
 import 'package:PiliPlus/models_new/space/space/followings_followed_upper.dart';
 import 'package:PiliPlus/models_new/space/space/images.dart';
-import 'package:PiliPlus/models_new/space/space/live.dart';
 import 'package:PiliPlus/models_new/space/space/pr_info.dart';
 import 'package:PiliPlus/models_new/space/space/top.dart';
 import 'package:PiliPlus/pages/fan/view.dart';
 import 'package:PiliPlus/pages/follow/view.dart';
 import 'package:PiliPlus/pages/follow_type/followed/view.dart';
 import 'package:PiliPlus/pages/member/widget/header_layout_widget.dart';
-import 'package:PiliPlus/pages/member/widget/medal_widget.dart';
 import 'package:PiliPlus/pages/member_guard/view.dart';
 import 'package:PiliPlus/pages/member_upower_rank/view.dart';
-import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/bili_colors.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
@@ -41,7 +38,6 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 class UserInfoCard extends StatelessWidget {
@@ -52,10 +48,8 @@ class UserInfoCard extends StatelessWidget {
     required this.images,
     required this.relation,
     required this.onFollow,
-    this.live,
     this.silence,
     required this.headerControllerBuilder,
-    required this.showLiveMedalWall,
     required this.charges,
     required this.chargeCount,
     required this.guards,
@@ -67,10 +61,8 @@ class UserInfoCard extends StatelessWidget {
   final SpaceCard card;
   final SpaceImages images;
   final VoidCallback onFollow;
-  final Live? live;
   final int? silence;
   final ValueGetter<PageController> headerControllerBuilder;
-  final VoidCallback showLiveMedalWall;
   final List<ElecItem>? charges;
   final Object? chargeCount;
   final List<Owner>? guards;
@@ -165,34 +157,7 @@ class UserInfoCard extends StatelessWidget {
   }
 
   Widget _buildName(BuildContext context, ColorScheme colorScheme) {
-    Widget? liveMedal;
-    if (card.liveFansWearing?.detailV2 case final detailV2?) {
-      Color? nameColor;
-      Color? backgroundColor;
-      try {
-        nameColor = ColourUtils.parseColor(detailV2.medalColorName!);
-        backgroundColor = ColourUtils.parseColor(detailV2.medalColor!);
-      } catch (e, s) {
-        if (kDebugMode) {
-          Utils.reportError(e, s);
-        }
-      }
-      try {
-        liveMedal = GestureDetector(
-          onTap: showLiveMedalWall,
-          child: MedalWidget(
-            medalName: detailV2.medalName!,
-            level: detailV2.level!,
-            backgroundColor: backgroundColor ?? colorScheme.secondaryContainer,
-            nameColor: nameColor ?? colorScheme.onSecondaryContainer,
-          ),
-        );
-      } catch (e, s) {
-        if (kDebugMode) {
-          Utils.reportError(e, s);
-        }
-      }
-    }
+    // 定制版：直播已移除，不再展示直播间粉丝勋章（勋章墙依赖直播接口）
     return Padding(
       padding: const .only(left: 20, right: 20),
       child: Wrap(
@@ -256,7 +221,6 @@ class UserInfoCard extends StatelessWidget {
           //       return const SizedBox.shrink();
           //     },
           //   ),
-          ?liveMedal,
         ],
       ),
     );
@@ -424,36 +388,6 @@ class UserInfoCard extends StatelessWidget {
         spacing: 10,
         mainAxisSize: .min,
         children: [
-          if (!isOwner)
-            IconButton.outlined(
-              onPressed: () {
-                if (Accounts.main.isLogin) {
-                  int mid = int.parse(card.mid!);
-                  Get.toNamed(
-                    '/whisperDetail',
-                    arguments: {
-                      'talkerId': mid,
-                      'name': card.name,
-                      'face': card.face,
-                      'mid': mid,
-                      'isLive': live?.liveStatus == 1,
-                    },
-                  );
-                }
-              },
-              icon: const Icon(Icons.mail_outline, size: 21),
-              style: ButtonStyle(
-                side: WidgetStatePropertyAll(
-                  BorderSide(
-                    width: 1.0,
-                    color: colorScheme.outline.withValues(alpha: 0.3),
-                  ),
-                ),
-                padding: const WidgetStatePropertyAll(.zero),
-                tapTargetSize: .shrinkWrap,
-                visualDensity: .compact,
-              ),
-            ),
           Expanded(
             child: FilledButton.tonal(
               onPressed: !isOwner && relation == -1 ? null : onFollow,
@@ -526,7 +460,7 @@ class UserInfoCard extends StatelessWidget {
       officialType: card.officialVerify?.type,
       vipStatus: card.vip?.status,
       pendantImage: pendant,
-      roomId: live?.liveStatus == 1 ? live!.roomid : null,
+      // 定制版：直播已移除，不再传入直播间号
       onTap: () => PageUtils.imageView(
         tag: hashCode.toString(),
         imgList: [SourceModel(url: card.face.http2https)],

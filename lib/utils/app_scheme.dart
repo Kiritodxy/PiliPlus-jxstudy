@@ -2,8 +2,6 @@
 
 import 'dart:async' show StreamSubscription;
 
-import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
     show PlaylistSource;
 import 'package:PiliPlus/http/search.dart';
@@ -14,8 +12,6 @@ import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/pages/fan/view.dart';
 import 'package:PiliPlus/pages/follow/view.dart';
 import 'package:PiliPlus/pages/follow_type/followed/view.dart';
-import 'package:PiliPlus/pages/live/view.dart';
-import 'package:PiliPlus/pages/rank/view.dart';
 import 'package:PiliPlus/pages/subscription_detail/view.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
@@ -377,20 +373,12 @@ abstract final class PiliScheme {
             }
             return false;
           case 'livearea':
-            Get.to(
-              SimpleScaffold(
-                appBar: AppBar(title: const Text('直播')),
-                body: const ViewSafeArea(child: LivePage()),
-              ),
-            );
+            // 定制版：直播功能已停用
+            SmartDialog.showToast('直播功能已停用');
             return true;
           case 'rank':
-            Get.to(
-              SimpleScaffold(
-                appBar: AppBar(title: const Text('排行榜')),
-                body: const ViewSafeArea(child: RankPage()),
-              ),
-            );
+            // 定制版：分区/排行榜模块已移除
+            SmartDialog.showToast('分区功能已停用');
             return true;
           case 'login':
             Get.toNamed('/loginPage');
@@ -798,20 +786,9 @@ abstract final class PiliScheme {
         launchURL();
         return false;
       case 'match' || 'game':
-        if (path.contains('match/data/detail') ||
-            path.contains('match/singledata')) {
-          String? cid = uriDigitRegExp.firstMatch(path)?.group(1);
-          if (cid != null) {
-            PageUtils.toDupNamed(
-              '/matchInfo',
-              parameters: {'cid': cid},
-              off: off,
-            );
-            return true;
-          }
-        }
-        launchURL();
-        return false;
+        // 定制版：电竞赛事功能已停用
+        SmartDialog.showToast('直播功能已停用');
+        return true;
       case 'cheese':
         // https://www.bilibili.com/cheese/play/ss123456
         bool hasMatch = PageUtils.viewPgcFromUri(path, isPgc: false);

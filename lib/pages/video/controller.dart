@@ -35,7 +35,6 @@ import 'package:PiliPlus/models_new/video/video_pbp/data.dart';
 import 'package:PiliPlus/models_new/video/video_play_info/subtitle.dart';
 import 'package:PiliPlus/models_new/video/video_stein_edgeinfo/data.dart';
 import 'package:PiliPlus/pages/audio/view.dart';
-import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/pages/sponsor_block/block_mixin.dart';
 import 'package:PiliPlus/pages/video/download_panel/view.dart';
@@ -44,7 +43,6 @@ import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/medialist/view.dart';
 import 'package:PiliPlus/pages/video/note/view.dart';
 import 'package:PiliPlus/pages/video/post_panel/view.dart';
-import 'package:PiliPlus/pages/video/send_danmaku/view.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
@@ -610,11 +608,8 @@ class VideoDetailController extends GetxController
     );
   }
 
-  ({int mode, int fontSize, Color color})? dmConfig;
-  String? savedDanmaku;
-
-  /// 发送弹幕
-  Future<void> showShootDanmakuSheet() async {
+  // 定制版：弹幕功能已移除（dmConfig / savedDanmaku 不再使用）
+  /*Future<void> showShootDanmakuSheet() async {
     if (plPlayerController.dmState.contains(cid.value)) {
       SmartDialog.showToast('UP主已关闭弹幕');
       return;
@@ -650,7 +645,7 @@ class VideoDetailController extends GetxController
     if (isPlaying) {
       plPlayerController.play();
     }
-  }
+  }*/
 
   VideoItem findVideoByQa(int qa, {bool setCodecs = false}) {
     /// 根据currentVideoQa和currentDecodeFormats 重新设置videoUrl
@@ -1277,8 +1272,7 @@ class VideoDetailController extends GetxController
     videoUrl = null;
     audioUrl = null;
 
-    // danmaku
-    savedDanmaku = null;
+    // 定制版：弹幕功能已移除（savedDanmaku 不再保留）
 
     // subtitle
     subtitles.clear();

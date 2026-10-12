@@ -8,7 +8,6 @@ import 'package:PiliPlus/models/common/member/tab_type.dart';
 import 'package:PiliPlus/models/model_owner.dart';
 import 'package:PiliPlus/models_new/space/space/data.dart';
 import 'package:PiliPlus/models_new/space/space/elec.dart';
-import 'package:PiliPlus/models_new/space/space/live.dart';
 import 'package:PiliPlus/models_new/space/space/reservation_card_list.dart';
 import 'package:PiliPlus/models_new/space/space/setting.dart';
 import 'package:PiliPlus/models_new/space/space/tab2.dart';
@@ -33,7 +32,6 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
 
   late final account = Accounts.main;
 
-  Live? live;
   int? silence;
 
   int? isFollowed; // 被关注
@@ -106,7 +104,6 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
             : data.relation ?? 0;
     }
     tab2 = data.tab2;
-    live = data.live;
     silence = card?.silence;
     if ((data.ugcSeason?.count != null && data.ugcSeason?.count != 0) ||
         data.series?.item?.isNotEmpty == true) {

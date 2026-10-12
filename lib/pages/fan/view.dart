@@ -3,7 +3,7 @@ import 'package:PiliPlus/models_new/follow/list.dart';
 import 'package:PiliPlus/pages/fan/controller.dart';
 import 'package:PiliPlus/pages/follow_type/view.dart';
 import 'package:PiliPlus/pages/follow_type/widgets/item.dart';
-import 'package:PiliPlus/pages/share/view.dart' show UserModel;
+import 'package:PiliPlus/models/common/user_model.dart' show UserModel;
 import 'package:PiliPlus/utils/parse_int.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';

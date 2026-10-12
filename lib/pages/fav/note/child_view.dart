@@ -6,7 +6,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/fav/fav_note/list.dart';
 import 'package:PiliPlus/pages/fav/note/controller.dart';
 import 'package:PiliPlus/pages/fav/note/widget/item.dart';
-import 'package:PiliPlus/pages/fav/pgc/pgc_layout.dart';
+import 'package:PiliPlus/common/widgets/slot_layout.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';

@@ -1,13 +1,10 @@
-import 'dart:convert' show jsonEncode;
 import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/selection_text.dart';
-import 'package:PiliPlus/grpc/bilibili/im/type.pbenum.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
-import 'package:PiliPlus/grpc/im.dart';
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -21,7 +18,6 @@ import 'package:PiliPlus/models_new/fav/fav_detail/media.dart';
 import 'package:PiliPlus/models_new/later/list.dart';
 import 'package:PiliPlus/models_new/relation/data.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
-import 'package:PiliPlus/pages/dynamics_tab/controller.dart';
 import 'package:PiliPlus/pages/fav_detail/controller.dart'
     show BaseFavController;
 import 'package:PiliPlus/pages/group_panel/view.dart';
@@ -56,51 +52,7 @@ abstract final class RequestUtils {
     }
   }
 
-  // 1：小视频（已弃用）
-  // 2：相簿
-  // 3：纯文字
-  // 4：直播（此类型不常用，见分享其他内容消息）
-  // 5：视频
-  // 6：专栏
-  // 7：番剧（id 为 season_id）
-  // 8：音乐
-  // 9：国产动画（id 为 AV 号）
-  // 10：图片
-  // 11：动态
-  // 16：番剧（id 为 epid）
-  // 17：番剧
-  // https://github.com/SocialSisterYi/bilibili-API-collect/tree/master/docs/message/private_msg_content.md
-  static Future<bool> pmShare({
-    required int receiverId,
-    required Map content,
-    String? message,
-  }) async {
-    final ownerMid = Accounts.main.mid;
-    final contentRes = await ImGrpc.sendMsg(
-      senderUid: ownerMid,
-      receiverId: receiverId,
-      content: jsonEncode(content),
-      msgType: content['source'] is String
-          ? MsgType.EN_MSG_TYPE_COMMON_SHARE_CARD
-          : MsgType.EN_MSG_TYPE_SHARE_V2,
-    );
-
-    if (contentRes.isSuccess) {
-      if (message?.isNotEmpty == true) {
-        final msgRes = await ImGrpc.sendMsg(
-          senderUid: ownerMid,
-          receiverId: receiverId,
-          content: jsonEncode({"content": message}),
-          msgType: MsgType.EN_MSG_TYPE_TEXT,
-        );
-        return msgRes.isSuccess;
-      } else {
-        return true;
-      }
-    } else {
-      return false;
-    }
-  }
+  // 定制版：私信分享功能已移除
 
   static Future<void> createFavTag(
     BuildContext context,
@@ -294,25 +246,8 @@ abstract final class RequestUtils {
   //   }
   // }
 
-  static Future<void> insertCreatedDyn(dynamic id) async {
-    if (id != null) {
-      try {
-        await Future.pause(const Duration(milliseconds: 450));
-        final res = await DynamicsHttp.dynamicDetail(id: id);
-        if (res case final Success<DynamicItemModel> e) {
-          final ctr = Get.find<DynamicsTabController>(tag: 'all');
-          if (ctr.loadingState.value case Success(:final response?)) {
-            response.insert(0, e.response);
-            ctr.loadingState.refresh();
-            return;
-          }
-          ctr.loadingState.value = Success([e.response]);
-        }
-      } catch (e) {
-        if (kDebugMode) debugPrint('create dyn $e');
-      }
-    }
-  }
+  // 定制版：动态模块已移除，发布动态后不再插入动态流
+  static Future<void> insertCreatedDyn(dynamic id) async {}
 
   static Future<void> checkCreatedDyn({
     dynamic id,

@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/cdn_type.dart';
-import 'package:PiliPlus/models/common/video/live_quality.dart';
 import 'package:PiliPlus/models/common/video/video_decode_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
@@ -62,12 +61,6 @@ List<SettingsModel> get videoSettings => [
         '当前使用：${VideoUtils.cdnService.desc}，部分 CDN 可能失效，如无法播放请尝试切换',
     onTap: _showCDNDialog,
   ),
-  NormalModel(
-    title: '直播 CDN 设置',
-    leading: const Icon(MdiIcons.cloudPlusOutline),
-    getSubtitle: () => '当前使用：${Pref.liveCdnUrl ?? "默认"}',
-    onTap: _showLiveCDNDialog,
-  ),
   const SwitchModel(
     title: 'CDN 测速',
     leading: Icon(Icons.speed),
@@ -110,19 +103,6 @@ List<SettingsModel> get videoSettings => [
     getSubtitle: () =>
         '当前音质：${AudioQuality.fromCode(Pref.defaultAudioQaCellular).desc}',
     onTap: _showAudioCellularQaDialog,
-  ),
-  NormalModel(
-    title: '直播默认画质',
-    leading: const Icon(Icons.video_settings_outlined),
-    getSubtitle: () => '当前画质：${LiveQuality.fromCode(Pref.liveQuality)?.desc}',
-    onTap: _showLiveQaDialog,
-  ),
-  NormalModel(
-    title: '蜂窝网络直播默认画质',
-    leading: const Icon(Icons.video_settings_outlined),
-    getSubtitle: () =>
-        '当前画质：${LiveQuality.fromCode(Pref.liveQualityCellular)?.desc}',
-    onTap: _showLiveCellularQaDialog,
   ),
   NormalModel(
     title: '首选解码格式',
@@ -187,50 +167,6 @@ Future<void> _showCDNDialog(BuildContext context, VoidCallback setState) async {
   if (res != null) {
     VideoUtils.cdnService = res;
     await GStorage.setting.put(SettingBoxKey.CDNService, res.name);
-    setState();
-  }
-}
-
-Future<void> _showLiveCDNDialog(
-  BuildContext context,
-  VoidCallback setState,
-) async {
-  String host = Pref.liveCdnUrl ?? '';
-  String? res = await showDialog<String>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('输入CDN host'),
-      content: TextFormField(
-        initialValue: host,
-        autofocus: true,
-        onChanged: (value) => host = value,
-      ),
-      actions: [
-        TextButton(
-          onPressed: Get.back,
-          child: Text(
-            '取消',
-            style: TextStyle(color: ColorScheme.of(context).outline),
-          ),
-        ),
-        TextButton(
-          onPressed: () => Get.back(result: host),
-          child: const Text('确定'),
-        ),
-      ],
-    ),
-  );
-  if (res != null) {
-    if (res.isEmpty) {
-      res = null;
-      await GStorage.setting.delete(SettingBoxKey.liveCdnUrl);
-    } else {
-      if (!res.startsWith('http')) {
-        res = 'https://$res';
-      }
-      await GStorage.setting.put(SettingBoxKey.liveCdnUrl, res);
-    }
-    VideoUtils.liveCdnUrl = res;
     setState();
   }
 }
@@ -309,42 +245,6 @@ Future<void> _showAudioCellularQaDialog(
       SettingBoxKey.defaultAudioQaCellular,
       res,
     );
-    setState();
-  }
-}
-
-Future<void> _showLiveQaDialog(
-  BuildContext context,
-  VoidCallback setState,
-) async {
-  final res = await showDialog<int>(
-    context: context,
-    builder: (context) => SelectDialog<int>(
-      title: '直播默认画质',
-      value: Pref.liveQuality,
-      values: LiveQuality.values.map((e) => (e.code, e.desc)).toList(),
-    ),
-  );
-  if (res != null) {
-    await GStorage.setting.put(SettingBoxKey.liveQuality, res);
-    setState();
-  }
-}
-
-Future<void> _showLiveCellularQaDialog(
-  BuildContext context,
-  VoidCallback setState,
-) async {
-  final res = await showDialog<int>(
-    context: context,
-    builder: (context) => SelectDialog<int>(
-      title: '蜂窝网络直播默认画质',
-      value: Pref.liveQualityCellular,
-      values: LiveQuality.values.map((e) => (e.code, e.desc)).toList(),
-    ),
-  );
-  if (res != null) {
-    await GStorage.setting.put(SettingBoxKey.liveQualityCellular, res);
     setState();
   }
 }

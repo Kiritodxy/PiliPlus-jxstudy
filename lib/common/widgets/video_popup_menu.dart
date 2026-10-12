@@ -4,7 +4,6 @@ import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/home/rcmd/result.dart';
 import 'package:PiliPlus/models/model_video.dart';
 import 'package:PiliPlus/models_new/space/space_archive/item.dart';
-import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/pages/video/ai_conclusion/view.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
@@ -313,13 +312,6 @@ class VideoPopupMenu extends StatelessWidget {
                     ),
                   ),
                 ],
-                _VideoCustomAction(
-                  "${MineController.anonymity.value ? '退出' : '进入'}无痕模式",
-                  MineController.anonymity.value
-                      ? const Icon(MdiIcons.incognitoOff, size: 16)
-                      : const Icon(MdiIcons.incognito, size: 16),
-                  MineController.onChangeAnonymity,
-                ),
               ]
               .map(
                 (e) => PopupMenuItem(

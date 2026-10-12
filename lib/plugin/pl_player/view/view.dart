@@ -28,8 +28,6 @@ import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_detail/ugc_season.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
-import 'package:PiliPlus/pages/live_room/widgets/bottom_control.dart'
-    as live_bottom;
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
 import 'package:PiliPlus/pages/video/post_panel/popup_menu_text.dart';
@@ -78,7 +76,6 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
@@ -1366,8 +1363,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       children: <Widget>[
         _videoWidget,
 
-        if (widget.danmuWidget case final danmaku?)
-          Positioned.fill(top: 4, child: danmaku),
+        // 定制版：弹幕功能已移除，不再挂载弹幕图层
+        // if (widget.danmuWidget case final danmaku?)
+        //   Positioned.fill(top: 4, child: danmaku),
 
         if (!isLive)
           Positioned.fill(
@@ -2382,39 +2380,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   ),
                 ),
             ],
-            LiveDanmaku() => [
-              _dmActionItem(
-                const Icon(
-                  size: 20,
-                  MdiIcons.accountOutline,
-                  color: Colors.white,
-                ),
-                onTap: () => Get.toNamed('/member?mid=${extra.mid}'),
-              ),
-              _dmActionItem(
-                const Icon(
-                  size: 19,
-                  CustomIcons.player_dm_tip_copy,
-                  color: Colors.white,
-                ),
-                onTap: () => Utils.copyText(item.content.text),
-              ),
-              _dmActionItem(
-                const Icon(
-                  size: 20,
-                  CustomIcons.player_dm_tip_back,
-                  color: Colors.white,
-                ),
-                onTap: () => HeaderControl.reportLiveDanmaku(
-                  context,
-                  roomId: (widget.bottomControl as live_bottom.BottomControl)
-                      .liveRoomCtr
-                      .roomId,
-                  msg: item.content.text,
-                  extra: extra,
-                ),
-              ),
-            ],
+            // 定制版：直播已移除，直播弹幕不会出现，此分支恒为空
+            LiveDanmaku() => [],
           },
         ),
       ),

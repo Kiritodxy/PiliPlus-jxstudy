@@ -10,10 +10,8 @@ import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart'
     show NoOverscrollIndicator;
 import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
-import 'package:PiliPlus/http/live.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
-import 'package:PiliPlus/models_new/live/live_medal_wall/data.dart';
 import 'package:PiliPlus/models_new/space/space/reservation_card_list.dart';
 import 'package:PiliPlus/pages/coin_log/controller.dart';
 import 'package:PiliPlus/pages/exp_log/controller.dart';
@@ -21,7 +19,6 @@ import 'package:PiliPlus/pages/log_table/view.dart';
 import 'package:PiliPlus/pages/login_devices/view.dart';
 import 'package:PiliPlus/pages/login_log/controller.dart';
 import 'package:PiliPlus/pages/member/controller.dart';
-import 'package:PiliPlus/pages/member/widget/medal_wall.dart';
 import 'package:PiliPlus/pages/member/widget/reserve_button.dart';
 import 'package:PiliPlus/pages/member/widget/user_info_card.dart';
 import 'package:PiliPlus/pages/member_cheese/view.dart';
@@ -30,7 +27,6 @@ import 'package:PiliPlus/pages/member_contribute/view.dart';
 import 'package:PiliPlus/pages/member_dynamics/view.dart';
 import 'package:PiliPlus/pages/member_favorite/view.dart';
 import 'package:PiliPlus/pages/member_home/view.dart';
-import 'package:PiliPlus/pages/member_pgc/view.dart';
 import 'package:PiliPlus/pages/member_shop/view.dart';
 import 'package:PiliPlus/pages/member_video_web/archive/view.dart';
 import 'package:PiliPlus/pages/member_video_web/season_series/view.dart';
@@ -80,7 +76,6 @@ class _MemberPageState extends State<MemberPage> {
     _headerController?.dispose();
     _headerController = null;
     _cacheFollowTime = null;
-    _cacheMedalData = null;
     super.dispose();
   }
 
@@ -113,10 +108,8 @@ class _MemberPageState extends State<MemberPage> {
                         card: response.card!,
                         images: response.images!,
                         onFollow: () => _userController.onFollow(context),
-                        live: _userController.live,
                         silence: _userController.silence,
                         headerControllerBuilder: getHeaderController,
-                        showLiveMedalWall: _showLiveMedalWall,
                         charges: _userController.charges,
                         chargeCount: _userController.chargeCount,
                         guards: _userController.guards,
@@ -585,10 +578,6 @@ class _MemberPageState extends State<MemberPage> {
             mid: _mid,
           ),
         ),
-        'bangumi' => MemberBangumi(
-          heroTag: _heroTag,
-          mid: _mid,
-        ),
         'favorite' => MemberFavorite(
           heroTag: _heroTag,
           mid: _mid,
@@ -639,31 +628,6 @@ class _MemberPageState extends State<MemberPage> {
           '关注时间: ${DateFormatUtils.longFormatDs.format(
             DateTime.fromMillisecondsSinceEpoch(response.mtime! * 1000),
           )}';
-      onShow();
-    } else {
-      res.toast();
-    }
-  }
-
-  MedalWallData? _cacheMedalData;
-  Future<void> _showLiveMedalWall() async {
-    void onShow() {
-      if (!mounted) return;
-      showDialog(
-        context: context,
-        builder: (context) => MedalWall(response: _cacheMedalData!),
-      );
-    }
-
-    if (_cacheMedalData != null) {
-      onShow();
-      return;
-    }
-    SmartDialog.showLoading();
-    final res = await LiveHttp.liveMedalWall(mid: _mid);
-    SmartDialog.dismiss();
-    if (res case Success(:final response)) {
-      _cacheMedalData = response;
       onShow();
     } else {
       res.toast();

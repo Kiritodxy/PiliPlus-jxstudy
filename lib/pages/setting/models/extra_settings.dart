@@ -33,6 +33,7 @@ import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
+import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/filtering_text.dart';
 import 'package:PiliPlus/utils/global_data.dart';
@@ -42,7 +43,6 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/update.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -102,19 +102,6 @@ List<SettingsModel> get extraSettings => [
         .put(SettingBoxKey.pgcSkipType, value.index)
         .whenComplete(setState),
   ),
-  SplitModel(
-    normalModel: const NormalModel.split(
-      title: '检查未读动态',
-      subtitle: '点击设置检查周期(min)',
-      leading: Icon(Icons.notifications_none),
-    ),
-    switchModel: SwitchModel.split(
-      defaultVal: true,
-      setKey: SettingBoxKey.checkDynamic,
-      onChanged: (value) => Get.find<MainController>().checkDynamic = value,
-      onTap: _showDynDialog,
-    ),
-  ),
   const SwitchModel(
     title: '显示视频分段信息',
     leading: Icon(CustomIcons.view_headline_rotate_90),
@@ -127,17 +114,18 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.showRelatedVideo,
     defaultVal: true,
   ),
+  // 定制版：「学习白名单」已移到设置主页一级入口
   const SwitchModel(
-    title: '显示视频评论',
+    title: '显示视频评论（定制版：默认关闭）',
     leading: Icon(MdiIcons.commentTextOutline),
     setKey: SettingBoxKey.showVideoReply,
-    defaultVal: true,
+    defaultVal: false,
   ),
   const SwitchModel(
-    title: '显示番剧评论',
+    title: '显示番剧评论（定制版：默认关闭）',
     leading: Icon(MdiIcons.commentTextOutline),
     setKey: SettingBoxKey.showBangumiReply,
-    defaultVal: true,
+    defaultVal: false,
   ),
   const SwitchModel(
     title: '默认展开视频简介',
@@ -180,16 +168,7 @@ List<SettingsModel> get extraSettings => [
     ),
     onTap: _showReplyLengthDialog,
   ),
-  NormalModel(
-    title: '弹幕行高',
-    subtitle: '默认1.6',
-    leading: const Icon(CustomIcons.dm_settings),
-    getTrailing: (theme) => Text(
-      Pref.danmakuLineHeight.toString(),
-      style: theme.textTheme.titleSmall,
-    ),
-    onTap: _showDmHeightDialog,
-  ),
+  // 定制版：弹幕功能已移除（弹幕行高）
   const SwitchModel(
     title: '显示视频警告/争议信息',
     leading: Icon(Icons.warning_amber_rounded),
@@ -258,19 +237,7 @@ List<SettingsModel> get extraSettings => [
         '当前指示器高度: ${Pref.refreshDisplacement}, 刷新滑动距离: $refreshDragExtent',
     onTap: _showRefreshDialog,
   ),
-  const SwitchModel(
-    title: '显示会员彩色弹幕',
-    leading: Icon(MdiIcons.gradientHorizontal),
-    setKey: SettingBoxKey.showVipDanmaku,
-    defaultVal: true,
-  ),
-  const SwitchModel(
-    title: '合并弹幕',
-    subtitle: '合并一段时间内获取到的相同弹幕',
-    leading: Icon(Icons.merge),
-    setKey: SettingBoxKey.mergeDanmaku,
-    defaultVal: false,
-  ),
+  // 定制版：弹幕功能已移除（显示会员彩色弹幕 / 合并弹幕）
   const SwitchModel(
     title: '显示热门推荐',
     subtitle: '热门页面显示每周必看等推荐内容入口',
@@ -366,13 +333,7 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.showSeekPreview,
     defaultVal: true,
   ),
-  const SwitchModel(
-    title: '显示高能进度条',
-    subtitle: '高能进度条反应了在时域上，单位时间内弹幕发送量的变化趋势',
-    leading: Icon(Icons.show_chart),
-    setKey: SettingBoxKey.showDmChart,
-    defaultVal: false,
-  ),
+  // 定制版：弹幕功能已移除（显示高能进度条）
   const SwitchModel(
     title: '记录评论',
     leading: Icon(Icons.message_outlined),
@@ -530,13 +491,6 @@ List<SettingsModel> get extraSettings => [
     defaultVal: false,
   ),
   const SwitchModel(
-    title: '消息页禁用"收到的赞"功能',
-    subtitle: '禁止打开入口，降低网络社交依赖',
-    leading: Icon(Icons.beach_access_outlined),
-    setKey: SettingBoxKey.disableLikeMsg,
-    defaultVal: false,
-  ),
-  const SwitchModel(
     title: '默认展示评论区',
     subtitle: '在视频详情页默认切换至评论区页（仅Tab型布局）',
     leading: Icon(Icons.mode_comment_outlined),
@@ -627,18 +581,6 @@ List<SettingsModel> get extraSettings => [
     getSubtitle: () => '当前最大缓存大小: 「${Pref.maxCacheSize.formatSize}」',
     leading: const Icon(Icons.delete_outlined),
     onTap: _showCacheDialog,
-  ),
-  SwitchModel(
-    title: '检查更新',
-    subtitle: '每次启动时检查是否需要更新',
-    leading: const Icon(Icons.system_update_alt),
-    setKey: SettingBoxKey.autoUpdate,
-    defaultVal: true,
-    onChanged: (val) {
-      if (val) {
-        Update.checkUpdate(false);
-      }
-    },
   ),
 ];
 
@@ -789,45 +731,6 @@ void _showDownPathDialog(BuildContext context, VoidCallback setState) {
   );
 }
 
-void _showDynDialog(BuildContext context) {
-  String dynamicPeriod = Pref.dynamicPeriod.toString();
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('检查周期'),
-      content: TextFormField(
-        autofocus: true,
-        initialValue: dynamicPeriod,
-        keyboardType: TextInputType.number,
-        onChanged: (value) => dynamicPeriod = value,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration: const InputDecoration(suffixText: 'min'),
-      ),
-      actions: [
-        TextButton(
-          onPressed: Get.back,
-          child: Text(
-            '取消',
-            style: TextStyle(color: ColorScheme.of(context).outline),
-          ),
-        ),
-        TextButton(
-          onPressed: () {
-            try {
-              final val = int.parse(dynamicPeriod);
-              Get.back();
-              GStorage.setting.put(SettingBoxKey.dynamicPeriod, val);
-              Get.find<MainController>().dynamicPeriod = val * 60 * 1000;
-            } catch (e) {
-              SmartDialog.showToast(e.toString());
-            }
-          },
-          child: const Text('确定'),
-        ),
-      ],
-    ),
-  );
-}
 
 void _showReplyLengthDialog(BuildContext context, VoidCallback setState) {
   String replyLengthLimit = ReplyItemGrpc.replyLengthLimit.toString();
@@ -870,47 +773,6 @@ void _showReplyLengthDialog(BuildContext context, VoidCallback setState) {
   );
 }
 
-void _showDmHeightDialog(BuildContext context, VoidCallback setState) {
-  String danmakuLineHeight = Pref.danmakuLineHeight.toString();
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('弹幕行高'),
-      content: TextFormField(
-        autofocus: true,
-        initialValue: danmakuLineHeight,
-        keyboardType: const .numberWithOptions(decimal: true),
-        onChanged: (value) => danmakuLineHeight = value,
-        inputFormatters: FilteringText.decimal,
-      ),
-      actions: [
-        TextButton(
-          onPressed: Get.back,
-          child: Text(
-            '取消',
-            style: TextStyle(color: ColorScheme.of(context).outline),
-          ),
-        ),
-        TextButton(
-          onPressed: () async {
-            try {
-              final val = max(
-                1.0,
-                double.parse(danmakuLineHeight).toPrecision(1),
-              );
-              Get.back();
-              await GStorage.setting.put(SettingBoxKey.danmakuLineHeight, val);
-              setState();
-            } catch (e) {
-              SmartDialog.showToast(e.toString());
-            }
-          },
-          child: const Text('确定'),
-        ),
-      ],
-    ),
-  );
-}
 
 void _showTouchSlopDialog(BuildContext context, VoidCallback setState) {
   String initialValue = Pref.touchSlopH.toString();

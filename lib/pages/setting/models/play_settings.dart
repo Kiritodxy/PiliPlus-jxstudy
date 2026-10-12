@@ -1,11 +1,8 @@
 import 'dart:io' show Platform;
 
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
-import 'package:PiliPlus/models/common/super_chat_type.dart';
 import 'package:PiliPlus/models/common/video/subtitle_pref_type.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
-import 'package:PiliPlus/pages/setting/pages/fullscreen_sc_size.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/slider_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
@@ -25,21 +22,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:material_ui/material_ui.dart';
 
 List<SettingsModel> get playSettings => [
-  const SwitchModel(
-    title: '弹幕开关',
-    subtitle: '是否展示弹幕',
-    leading: Icon(CustomIcons.dm_settings),
-    setKey: SettingBoxKey.enableShowDanmaku,
-    defaultVal: true,
-  ),
-  if (PlatformUtils.isMobile)
-    const SwitchModel(
-      title: '启用点击弹幕',
-      subtitle: '点击弹幕悬停，支持点赞、复制、举报操作',
-      leading: Icon(Icons.touch_app_outlined),
-      setKey: SettingBoxKey.enableTapDm,
-      defaultVal: true,
-    ),
+  // 定制版：弹幕功能已移除（弹幕开关 / 启用点击弹幕）
   NormalModel(
     onTap: (context, setState) => Get.toNamed('/playSpeedSet'),
     leading: const Icon(Icons.speed_outlined),
@@ -53,12 +36,13 @@ List<SettingsModel> get playSettings => [
       title: '倾斜角度阈值',
       getSubtitle: () => '当前:「${Pref.angleDegrees}°」',
     ),
+  // 定制版：自动播放默认开启
   const SwitchModel(
     title: '自动播放',
     subtitle: '进入详情页自动播放',
     leading: Icon(Icons.motion_photos_auto_outlined),
     setKey: SettingBoxKey.autoPlayEnable,
-    defaultVal: false,
+    defaultVal: true,
   ),
   const SwitchModel(
     title: '全屏显示锁定按钮',
@@ -165,21 +149,6 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.keyboardControl,
     defaultVal: true,
   ),
-  PopupModel(
-    title: 'SuperChat (醒目留言) 显示类型',
-    leading: const Icon(Icons.live_tv),
-    value: () => Pref.superChatType,
-    items: SuperChatType.values,
-    onSelected: (value, setState) => GStorage.setting
-        .put(SettingBoxKey.superChatType, value.index)
-        .whenComplete(setState),
-  ),
-  NormalModel(
-    title: '全屏 SC 大小',
-    subtitle: 'SuperChat (醒目留言) 大小设置',
-    leading: const Icon(Icons.open_in_full),
-    onTap: (_, _) => Get.to(const FullScreenScSize()),
-  ),
   const SwitchModel(
     title: '竖屏扩大展示',
     subtitle: '小屏竖屏视频宽高比由16:9扩大至1:1（不支持收起）；横屏适配时，扩大至9:16',
@@ -232,15 +201,8 @@ List<SettingsModel> get playSettings => [
             }
           : null,
     ),
-  // PiP on iOS only shows the video frames, without danmaku.
-  if (Platform.isAndroid)
-    const SwitchModel(
-      title: '画中画不加载弹幕',
-      subtitle: '当弹幕开关开启时，小窗屏蔽弹幕以获得较好的体验',
-      leading: Icon(CustomIcons.dm_off),
-      setKey: SettingBoxKey.pipNoDanmaku,
-      defaultVal: false,
-    ),
+    // 定制版：弹幕功能已移除（画中画不加载弹幕）
+  ],
   const SwitchModel(
     title: '全屏手势反向',
     subtitle: '默认播放器中部向上滑动进入全屏，向下退出\n开启后向下全屏，向上退出',
@@ -297,7 +259,7 @@ List<SettingsModel> get playSettings => [
   ),
   const SwitchModel(
     title: '播放器设置仅对当前生效',
-    subtitle: '弹幕、字幕及部分设置中没有的设置除外',
+    subtitle: '字幕及部分设置中没有的设置除外',
     leading: Icon(Icons.video_settings_outlined),
     setKey: SettingBoxKey.tempPlayerConf,
     defaultVal: false,

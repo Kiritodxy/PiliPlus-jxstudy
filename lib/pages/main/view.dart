@@ -89,10 +89,7 @@ class _MainAppState extends PopScopeState<MainApp>
   @override
   void didPopNext() {
     addObserverMobile(this);
-    _mainController
-      ..checkUnreadDynamic()
-      ..checkDefaultSearch(true)
-      ..checkUnread(_mainController.useBottomNav);
+    _mainController.checkDefaultSearch(true);
     super.didPopNext();
   }
 
@@ -105,10 +102,7 @@ class _MainAppState extends PopScopeState<MainApp>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _mainController
-        ..checkUnreadDynamic()
-        ..checkDefaultSearch(true)
-        ..checkUnread(_mainController.useBottomNav);
+      _mainController.checkDefaultSearch(true);
     }
   }
 
@@ -574,22 +568,8 @@ class _MainAppState extends PopScopeState<MainApp>
   }
 
   Widget _buildIcon({required NavigationBarType type, bool selected = false}) {
-    final icon = selected ? type.selectIcon : type.icon;
-    return type == .dynamics
-        ? Obx(
-            () {
-              final dynCount = _mainController.dynCount.value;
-              return Badge(
-                isLabelVisible: dynCount > 0,
-                label: _mainController.dynamicBadgeMode == .number
-                    ? Text(dynCount.toString())
-                    : null,
-                padding: const .symmetric(horizontal: 6),
-                child: icon,
-              );
-            },
-          )
-        : icon;
+    // 定制版：动态模块已移除，不再渲染未读徽标
+    return selected ? type.selectIcon : type.icon;
   }
 
   Widget userAndSearchVertical() {
@@ -597,7 +577,6 @@ class _MainAppState extends PopScopeState<MainApp>
       children: [
         userAvatar(colorScheme: _colorScheme, mainController: _mainController),
         const SizedBox(height: 8),
-        msgBadge(_mainController),
         IconButton(
           tooltip: '搜索',
           icon: const Icon(

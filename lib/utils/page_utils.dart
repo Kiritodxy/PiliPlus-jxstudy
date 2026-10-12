@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:PiliPlus/common/widgets/fractionally_sized_box.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/gallery_viewer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero_dialog_route.dart';
-import 'package:PiliPlus/grpc/im.dart';
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/search.dart';
@@ -15,9 +14,7 @@ import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
-import 'package:PiliPlus/pages/contact/view.dart';
 import 'package:PiliPlus/pages/fav_panel/view.dart';
-import 'package:PiliPlus/pages/share/view.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
@@ -32,7 +29,6 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -63,50 +59,12 @@ abstract final class PageUtils {
     );
   }
 
+  // 定制版：私信分享功能已停用
   static Future<void> pmShare(
     BuildContext context, {
     required Map content,
   }) async {
-    // if (kDebugMode) debugPrint(content.toString());
-
-    List<UserModel> userList = <UserModel>[];
-
-    final res = await ImGrpc.shareList(size: 5);
-    if (res case Success(:final response)) {
-      if (response.sessionList.isNotEmpty) {
-        userList.addAll(
-          response.sessionList.map<UserModel>(
-            (item) => UserModel(
-              mid: item.talkerId.toInt(),
-              name: item.talkerUname,
-              avatar: item.talkerIcon,
-            ),
-          ),
-        );
-      }
-    }
-
-    if (userList.isEmpty && context.mounted) {
-      final UserModel? userModel = await Navigator.of(context).push(
-        GetPageRoute(page: () => const ContactPage()),
-      );
-      if (userModel != null) {
-        userList.add(userModel);
-      }
-    }
-
-    if (context.mounted) {
-      showModalBottomSheet(
-        context: context,
-        builder: (context) => SharePanel(
-          content: content,
-          userList: userList,
-        ),
-        useSafeArea: true,
-        enableDrag: false,
-        isScrollControlled: true,
-      );
-    }
+    SmartDialog.showToast('私信功能已停用');
   }
 
   static Future<void> pushDynFromId({
@@ -506,6 +464,7 @@ abstract final class PageUtils {
     );
   }
 
+  // 定制版：直播功能已移除，任何入口统一拦截
   static void toLiveRoom(
     int? roomId, {
     bool off = false,
@@ -513,12 +472,7 @@ abstract final class PageUtils {
     if (roomId == null) {
       return;
     }
-    Get.offOrToNamed(
-      '/liveRoom',
-      arguments: roomId,
-      off: off,
-      preventDuplicates: off,
-    );
+    SmartDialog.showToast('直播功能已停用');
   }
 
   static Future<void>? toVideoPage({
@@ -604,105 +558,14 @@ abstract final class PageUtils {
     return episode ?? episodes.first;
   }
 
+  // 定制版：番剧/影视功能已移除，任何入口统一拦截
   static Future<void> viewPgc({
     dynamic seasonId,
     dynamic epId,
     int? progress, // milliseconds
     bool off = false,
   }) async {
-    try {
-      SmartDialog.showLoading(msg: '资源获取中');
-      final res = await SearchHttp.pgcInfo(seasonId: seasonId, epId: epId);
-      SmartDialog.dismiss();
-      if (res case Success(:final response)) {
-        final episodes = response.episodes;
-        final hasEpisode = episodes != null && episodes.isNotEmpty;
-
-        EpisodeItem? episode;
-
-        void viewSection(EpisodeItem episode) {
-          toVideoPage(
-            videoType: VideoType.ugc,
-            bvid: episode.bvid!,
-            cid: episode.cid!,
-            seasonId: response.seasonId,
-            epId: episode.epId,
-            cover: episode.cover,
-            title: episode.title,
-            progress: progress,
-            extraArguments: {
-              'pgcApi': true,
-              'pgcItem': response,
-            },
-            off: off,
-          );
-        }
-
-        if (epId != null) {
-          epId = epId.toString();
-          if (hasEpisode) {
-            episode = episodes.firstWhereOrNull(
-              (item) => item.epId.toString() == epId,
-            );
-          }
-
-          // find section
-          if (episode == null) {
-            final sections = response.section;
-            if (sections != null && sections.isNotEmpty) {
-              for (final section in sections) {
-                final episodes = section.episodes;
-                if (episodes != null && episodes.isNotEmpty) {
-                  for (final episode in episodes) {
-                    if (episode.epId.toString() == epId) {
-                      // view as ugc
-                      viewSection(episode);
-                      return;
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        if (hasEpisode) {
-          episode ??= findEpisode(
-            episodes,
-            epId: response.userStatus?.progress?.lastEpId,
-          );
-          toVideoPage(
-            videoType: VideoType.pgc,
-            bvid: episode.bvid!,
-            cid: episode.cid!,
-            seasonId: response.seasonId,
-            epId: episode.epId,
-            pgcType: response.type,
-            cover: episode.cover,
-            progress: progress,
-            extraArguments: {
-              'pgcItem': response,
-            },
-            off: off,
-          );
-          return;
-        } else {
-          episode ??= response.section?.firstOrNull?.episodes?.firstOrNull;
-          if (episode != null) {
-            viewSection(episode);
-            return;
-          }
-        }
-
-        SmartDialog.showToast('资源加载失败');
-      } else {
-        res.toast();
-      }
-    } catch (e) {
-      SmartDialog.dismiss();
-      SmartDialog.showToast('$e');
-      if (kDebugMode) debugPrint('$e');
-    }
+    SmartDialog.showToast('番剧/影视功能已停用');
   }
 
   static Future<void> viewPugv({

@@ -19,7 +19,6 @@ import 'package:PiliPlus/models_new/sub/sub/list.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -27,7 +26,6 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
 class MineController extends GetxController with AccountMixin {
@@ -62,24 +60,7 @@ class MineController extends GetxController with AccountMixin {
         }
       },
     ),
-    (
-      icon: CustomIcons.subscriptions_outlined,
-      title: '我的订阅',
-      onTap: () {
-        if (isLogin) {
-          Get.toNamed('/subscription');
-        }
-      },
-    ),
-    (
-      icon: CustomIcons.watch_later_outlined,
-      title: '稍后再看',
-      onTap: () {
-        if (isLogin) {
-          Get.toNamed('/later');
-        }
-      },
-    ),
+  // 定制版：已移除「我的订阅」「稍后再看」入口
   ];
 
   late final Set<MineTabType> mineTabs;
@@ -275,6 +256,18 @@ class MineController extends GetxController with AccountMixin {
       );
     }
   }
+  @override
+  bool customHandleResponse(bool isRefresh, Success<FavFolderData> response) {
+    favFolderCount = response.response.count;
+    loadingState.value = response;
+    return true;
+  @override
+  Future<LoadingState<FavFolderData>> customGetData() {
+    return FavHttp.userfavFolder(
+      pn: 1,
+      ps: 20,
+      mid: Accounts.main.mid,
+  // 定制版：已移除无痕模式切换入口
 
   void onChangeTheme() {
     final newVal = nextThemeType;
