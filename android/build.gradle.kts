@@ -2,6 +2,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 allprojects {
     repositories {
+        // 定制构建：Flutter 引擎构件国内镜像（io.flutter:flutter_embedding_*）
+        maven("https://storage.flutter-io.cn/download.flutter.io")
+        // 定制构建：优先使用阿里云镜像（官方源在构建环境不可达）
+        maven("https://maven.aliyun.com/repository/google")
+        maven("https://maven.aliyun.com/repository/central")
+        maven("https://maven.aliyun.com/repository/public")
         google()
         mavenCentral()
     }
@@ -60,6 +66,15 @@ subprojects {
 
 subprojects {
     project.evaluationDependsOn(":app")
+}
+
+// 定制构建环境：全局禁用 Lint（8G 内存下是主要 OOM 来源，且打包不需要）
+allprojects {
+    tasks.matching {
+        it.name.startsWith("lint") || it.name.contains("Lint")
+    }.configureEach {
+        enabled = false
+    }
 }
 
 tasks.register<Delete>("clean") {

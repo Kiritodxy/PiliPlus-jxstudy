@@ -150,3 +150,13 @@ pili_release.json
 dist
 
 test*
+
+# ===== 定制版额外忽略 =====
+# 本地备份文件
+*.bak
+# APK / AAB 打包产物
+*.apk
+*.aab
+# API 推送中间产物
+.api_push_cache.json
+api_push*.py

@@ -20,6 +20,11 @@ if (!isBuiltInKotlinEnabled) {
 android {
     namespace = "com.example.piliplus"
     compileSdk = 37
+    // 定制构建环境：cgroup 内存仅 8G，Lint 极易触发 OOM，release 打包非必需
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
+    }
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -28,14 +33,31 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.piliplus"
+        applicationId = "com.custom.piliplus"
         minSdk = flutter.minSdkVersion
         targetSdk = 37
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // 定制版仅面向 arm64 设备。
+        // 限定 ABI 可剔除 media_kit 等依赖携带的 armeabi-v7a / x86_64 原生库，
+        // 显著减小安装包体积（主要省掉 ~30MB 的多架构 libmpv.so）。
+        ndk {
+            abiFilters += listOf("arm64-v8a")
+        }
     }
 
     packagingOptions.jniLibs.useLegacyPackaging = true
+
+    // 定制版仅面向 arm64 设备。
+    // media_kit_libs_video 等依赖通过 AAR 带入 armeabi-v7a / x86_64 的 libmpv.so，
+    // 这些 so 不走 NDK 编译，故 ndk.abiFilters 管不到，必须在此显式排除，
+    // 可省掉约 30MB 无用原生库。
+    packagingOptions.jniLibs.excludes += listOf(
+        "lib/armeabi-v7a/**",
+        "lib/x86/**",
+        "lib/x86_64/**",
+    )
 
     val keyProperties = Properties().also {
         val properties = rootProject.file("key.properties")
