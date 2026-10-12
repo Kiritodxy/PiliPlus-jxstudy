@@ -1,17 +1,10 @@
 import 'dart:async';
 
-import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/search.dart';
-import 'package:PiliPlus/models/search/suggest.dart';
-import 'package:PiliPlus/models_new/search/search_rcmd/data.dart';
-import 'package:PiliPlus/models_new/search/search_trending/data.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/study_guard.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:stream_transform/stream_transform.dart';
@@ -51,42 +44,16 @@ abstract class DebounceStreamState<T extends StatefulWidget, S> extends State<T>
   }
 }
 
-class BaseSearchController extends GetxController {
-  final historyList = List<String>.from(
-    GStorage.historyWord.get('cacheList') ?? const <String>[],
-  ).obs;
+// 定制版：已移除 搜索联想词、搜索历史、大家都在搜/完整榜单/搜索发现。
+// 无任何本地缓存，避免输入即推词，也避免留下浏览痕迹。
+class BaseSearchController extends GetxController {}
 
-  late final Rx<LoadingState<SearchTrendingData>> trendingState;
-
-  final recordSearchHistory = Pref.recordSearchHistory.obs;
-  final searchSuggestion = Pref.searchSuggestion;
-  final enableTrending = Pref.enableTrending;
-  final enableSearchRcmd = Pref.enableSearchRcmd;
-
-  @override
-  void onInit() {
-    super.onInit();
-
-    if (enableTrending) {
-      trendingState = LoadingState<SearchTrendingData>.loading().obs;
-      queryTrendingList();
-    }
-  }
-
-  // 获取热搜关键词
-  Future<void> queryTrendingList() async {
-    trendingState.value = await SearchHttp.searchTrending(limit: 10);
-  }
-}
-
-class SSearchController extends GetxController
-    with DebounceStreamMixin<String> {
+class SSearchController extends GetxController {
   SSearchController(this.tag);
   final String tag;
 
   final searchFocusNode = FocusNode();
   final controller = TextEditingController();
-  final _baseCtr = Get.putOrFind(BaseSearchController.new);
 
   String? hintText;
 
@@ -94,25 +61,6 @@ class SSearchController extends GetxController
 
   // uid
   final RxBool showUidBtn = false.obs;
-
-  // history
-  RxBool get recordSearchHistory => _baseCtr.recordSearchHistory;
-  RxList<String> get historyList => _baseCtr.historyList;
-
-  // suggestion
-  bool get searchSuggestion => _baseCtr.searchSuggestion;
-  late final RxList<SearchSuggestItem> searchSuggestList;
-
-  // trending
-  bool get enableTrending => _baseCtr.enableTrending;
-  Rx<LoadingState<SearchTrendingData>> get trendingState =>
-      _baseCtr.trendingState;
-
-  // rcmd
-  bool get enableSearchRcmd => _baseCtr.enableSearchRcmd;
-  late final Rx<LoadingState<SearchRcmdData>> recommendData;
-
-  Future<void> Function() get queryTrendingList => _baseCtr.queryTrendingList;
 
   @override
   void onInit() {
@@ -123,38 +71,17 @@ class SSearchController extends GetxController
     if (text != null) {
       controller.text = text;
     }
-
-    if (searchSuggestion) {
-      subInit();
-      searchSuggestList = <SearchSuggestItem>[].obs;
-      if (text != null) onValueChanged(text);
-    }
-
-    if (enableSearchRcmd) {
-      recommendData = LoadingState<SearchRcmdData>.loading().obs;
-      queryRecommendList();
-    }
   }
 
   void validateUid() {
     showUidBtn.value = IdUtils.digitOnlyRegExp.hasMatch(controller.text);
   }
 
-  void onChange(String value) {
-    validateUid();
-    if (searchSuggestion) {
-      if (value.isEmpty) {
-        searchSuggestList.clear();
-      } else {
-        ctr!.add(value);
-      }
-    }
-  }
+  void onChange(String value) => validateUid();
 
   void onClear() {
     if (controller.value.text != '') {
       controller.clear();
-      if (searchSuggestion) searchSuggestList.clear();
       searchFocusNode.requestFocus();
       showUidBtn.value = false;
     } else {
@@ -172,17 +99,19 @@ class SSearchController extends GetxController
 
     final text = controller.text;
 
-    if (await PiliScheme.routePushFromUrl(text, selfHandle: true)) {
+    // 定制版：仅允许命中学习白名单的关键词。
+    // 放在 scheme 解析之前，确保外链/BV号等非白名单内容也无法通过搜索框进入。
+    if (!StudyGuard.allowSearch(text)) {
+      SmartDialog.showToast(
+        StudyGuard.whitelist.isEmpty
+            ? '未配置学习白名单，请联系家长设置'
+            : '仅允许搜索学习相关内容',
+      );
       return;
     }
 
-    if (recordSearchHistory.value) {
-      final index = historyList.indexOf(text);
-      if (index != 0) {
-        if (index != -1) historyList.removeAt(index);
-        historyList.insert(0, text);
-        GStorage.historyWord.put('cacheList', historyList);
-      }
+    if (await PiliScheme.routePushFromUrl(text, selfHandle: true)) {
+      return;
     }
 
     searchFocusNode.unfocus();
@@ -198,47 +127,14 @@ class SSearchController extends GetxController
     });
   }
 
-  Future<void> queryRecommendList() async {
-    recommendData.value = await SearchHttp.searchRecommend();
-  }
-
-  void onClickKeyword(String keyword, {bool clearSuggest = true}) {
+  void onClickKeyword(String keyword) {
     controller.text = keyword;
     validateUid();
-
-    if (searchSuggestion && clearSuggest) searchSuggestList.clear();
     submit();
   }
 
   @override
-  Future<void> onValueChanged(String value) async {
-    final res = await SearchHttp.searchSuggest(term: value);
-    if (res case Success(:final response)) {
-      if (response.tag?.isNotEmpty == true) {
-        searchSuggestList.value = response.tag!;
-      }
-    }
-  }
-
-  void onLongSelect(String word) {
-    historyList.remove(word);
-    GStorage.historyWord.put('cacheList', historyList);
-  }
-
-  void onClearHistory() {
-    showConfirmDialog(
-      context: Get.context!,
-      title: const Text('确定清空搜索历史？'),
-      onConfirm: () {
-        historyList.clear();
-        GStorage.historyWord.delete('cacheList');
-      },
-    );
-  }
-
-  @override
   void onClose() {
-    subDispose();
     searchFocusNode.dispose();
     controller.dispose();
     super.onClose();

@@ -1,8 +1,8 @@
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/search/result.dart';
-import 'package:PiliPlus/models/search/search_esports.dart';
 import 'package:PiliPlus/pages/search_panel/video/controller.dart';
 
+// 定制版：已移除 电竞直播(searchEsports) 与 番剧/影视(searchMedia) 推荐板块
 class SearchAllController extends SearchVideoController with SearchVideoMixin {
   SearchAllController({
     required super.keyword,
@@ -11,9 +11,7 @@ class SearchAllController extends SearchVideoController with SearchVideoMixin {
   });
 
   List<SearchUser>? searchUser;
-  List<SearchPgcItemModel>? searchMedia;
   List<SearchActivity>? searchActivity;
-  SearchEsports? searchEsports;
 
   @override
   bool customHandleResponse(bool isRefresh, Success<SearchVideoData> response) {
@@ -21,9 +19,7 @@ class SearchAllController extends SearchVideoController with SearchVideoMixin {
     if (isRefresh) {
       searchType_ = .video;
       searchUser = res.searchUser;
-      searchMedia = res.searchMedia;
       searchActivity = res.searchActivity;
-      searchEsports = res.searchEsports;
     }
     return super.customHandleResponse(isRefresh, response);
   }
@@ -47,9 +43,7 @@ class SearchAllController extends SearchVideoController with SearchVideoMixin {
   Future<void> onRefresh() {
     _computeActualSearchType();
     searchUser = null;
-    searchMedia = null;
     searchActivity = null;
-    searchEsports = null;
     return super.onRefresh();
   }
 }

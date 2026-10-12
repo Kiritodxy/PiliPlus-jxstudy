@@ -11,6 +11,7 @@ import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/common/follow_order_type.dart';
 import 'package:PiliPlus/models/common/member/tab_type.dart';
 import 'package:PiliPlus/models/common/mine_tab_type.dart';
+import 'package:PiliPlus/utils/study_guard.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
@@ -27,8 +28,6 @@ import 'package:PiliPlus/models/common/video/video_decode_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models/user/danmaku_rule.dart';
 import 'package:PiliPlus/models/user/info.dart';
-import 'package:PiliPlus/pages/setting/pages/fullscreen_sc_size.dart'
-    show kFullScreenSCWidth;
 import 'package:PiliPlus/plugin/pl_player/models/audio_output_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
@@ -379,11 +378,13 @@ abstract final class Pref {
   static bool get showRelatedVideo =>
       _setting.get(SettingBoxKey.showRelatedVideo, defaultValue: true);
 
+  // 定制版：默认不显示视频评论
   static bool get showVideoReply =>
-      _setting.get(SettingBoxKey.showVideoReply, defaultValue: true);
+      _setting.get(SettingBoxKey.showVideoReply, defaultValue: false);
 
+  // 定制版：默认不显示番剧评论
   static bool get showBangumiReply =>
-      _setting.get(SettingBoxKey.showBangumiReply, defaultValue: true);
+      _setting.get(SettingBoxKey.showBangumiReply, defaultValue: false);
 
   static bool get alwaysExpandIntroPanel =>
       _setting.get(SettingBoxKey.alwaysExpandIntroPanel, defaultValue: false);
@@ -670,8 +671,9 @@ abstract final class Pref {
   static bool get autoExitFullscreen =>
       _setting.get(SettingBoxKey.enableAutoExit, defaultValue: true);
 
+  // 定制版：自动播放默认开启
   static bool get autoPlayEnable =>
-      _setting.get(SettingBoxKey.autoPlayEnable, defaultValue: false);
+      _setting.get(SettingBoxKey.autoPlayEnable, defaultValue: true);
 
   static bool get pipNoDanmaku =>
       _setting.get(SettingBoxKey.pipNoDanmaku, defaultValue: false);
@@ -717,8 +719,8 @@ abstract final class Pref {
     defaultValue: false,
   );
 
-  static bool get enableShowDanmaku =>
-      _setting.get(SettingBoxKey.enableShowDanmaku, defaultValue: true);
+  // 定制版：弹幕功能已移除，恒为 false 且不受任何设置影响
+  static bool get enableShowDanmaku => false;
 
   static bool get enableShowLiveDanmaku =>
       _setting.get(SettingBoxKey.enableShowLiveDanmaku, defaultValue: true);
@@ -955,9 +957,10 @@ abstract final class Pref {
         defaultValue: SuperChatType.valid.index,
       )];
 
+  // 定制版：直播 SC 已移除，保留 key 兼容旧配置
   static double get fullScreenSCWidth => _setting.get(
     SettingBoxKey.fullScreenSCWidth,
-    defaultValue: kFullScreenSCWidth,
+    defaultValue: 255.0,
   );
 
   static bool get minimizeOnExit =>
@@ -998,8 +1001,8 @@ abstract final class Pref {
   static bool get enablePlayAll =>
       _setting.get(SettingBoxKey.enablePlayAll, defaultValue: true);
 
-  static bool get enableTapDm =>
-      _setting.get(SettingBoxKey.enableTapDm, defaultValue: true);
+  // 定制版：弹幕功能已移除，点击弹幕交互同步禁用
+  static bool get enableTapDm => false;
 
   static bool get showTrayIcon =>
       _setting.get(SettingBoxKey.showTrayIcon, defaultValue: true);
@@ -1066,4 +1069,18 @@ abstract final class Pref {
           ?.map<MineTabType>((index) => .values[index])
           .toSet() ??
       MineTabType.kDefault;
+  // 定制版：学习白名单词库
+  static List<String> get searchWhitelist => List<String>.from(
+    _setting.get(
+      SettingBoxKey.searchWhitelist,
+      defaultValue: StudyGuard.defaultWhitelist,
+    ),
+  );
+  static Future<void> setSearchWhitelist(List<String> list) =>
+      _setting.put(SettingBoxKey.searchWhitelist, list);
+  // 定制版：家长密码（空=未设置，首次进入由家长设定）
+  static String get parentPassword =>
+      _setting.get(SettingBoxKey.parentPassword, defaultValue: '');
+  static Future<void> setParentPassword(String pwd) =>
+      _setting.put(SettingBoxKey.parentPassword, pwd);
 }

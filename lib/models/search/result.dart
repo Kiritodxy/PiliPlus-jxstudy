@@ -210,10 +210,6 @@ class SearchVideoItemModel extends HorizontalVideoModel {
       case 'ketang':
         badge = '课堂';
         isPugv = true;
-      case 'live_room':
-        badge = '直播';
-        isLive = true;
-        roomId = json['roomid'];
       default:
         if (json['is_union_video'] == 1) {
           badge = '合作';

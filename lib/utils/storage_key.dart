@@ -242,7 +242,10 @@ abstract final class SettingBoxKey {
       reduceLuxColor = 'reduceLuxColor',
       liveCdnUrl = 'liveCdnUrl',
       saveReply = 'saveReply',
-      appFont = 'appFont';
+      appFont = 'appFont',
+      // 定制版：学习白名单词库 + 家长密码
+      searchWhitelist = 'searchWhitelist',
+      parentPassword = 'parentPassword';
 }
 
 abstract final class LocalCacheKey {

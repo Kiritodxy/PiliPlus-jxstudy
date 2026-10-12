@@ -6,8 +6,6 @@ import 'package:PiliPlus/pages/search/controller.dart' show DebounceStreamState;
 import 'package:PiliPlus/pages/setting/models/extra_settings.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/models/play_settings.dart';
-import 'package:PiliPlus/pages/setting/models/privacy_settings.dart';
-import 'package:PiliPlus/pages/setting/models/recommend_settings.dart';
 import 'package:PiliPlus/pages/setting/models/style_settings.dart';
 import 'package:PiliPlus/pages/setting/models/video_settings.dart';
 import 'package:PiliPlus/utils/grid.dart';
@@ -29,8 +27,6 @@ class _SettingsSearchPageState
   final RxList<SettingsModel> _list = <SettingsModel>[].obs;
   late final _settings = [
     ...extraSettings,
-    ...privacySettings,
-    ...recommendSettings,
     ...videoSettings,
     ...playSettings,
     ...styleSettings,

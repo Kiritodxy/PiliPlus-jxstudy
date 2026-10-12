@@ -7,6 +7,7 @@ import 'package:PiliPlus/models/search/suggest.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_pub_search/data.dart';
 import 'package:PiliPlus/models_new/pagelist/page_item.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
+import 'package:PiliPlus/utils/study_guard.dart';
 import 'package:PiliPlus/models_new/search/search_rcmd/data.dart';
 import 'package:PiliPlus/models_new/search/search_trending/data.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
@@ -49,6 +50,8 @@ abstract final class SearchHttp {
     required SearchType searchType,
     required String keyword,
     required page,
+    // 定制版：最后一道防线。即便绕过搜索页直接构造结果页路由，
+    // 白名单外的关键词也不会真正发起网络请求。
     String? order,
     int? duration,
     int? tids,
@@ -60,6 +63,10 @@ abstract final class SearchHttp {
     String? gaiaVtoken,
     required ValueChanged<String> onSuccess,
   }) async {
+    if (!StudyGuard.allowSearch(keyword)) {
+      return const Error(null);
+    }
+
     final params = await WbiSign.makSign({
       'search_type': searchType.name,
       'keyword': keyword,
@@ -103,8 +110,6 @@ abstract final class SearchHttp {
             switch (searchType) {
               .all => SearchVideoData.fromSearchAll(dataData),
               .video => SearchVideoData.fromJson(dataData),
-              .media_bangumi || .media_ft => SearchPgcData.fromJson(dataData),
-              .live_room => SearchLiveData.fromJson(dataData),
               .bili_user => SearchUserData.fromJson(dataData),
               .article => SearchArticleData.fromJson(dataData),
             } as R,

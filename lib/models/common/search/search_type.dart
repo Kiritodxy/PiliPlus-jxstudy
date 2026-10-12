@@ -4,18 +4,9 @@ import 'package:PiliPlus/models/common/enum_with_label.dart';
 
 enum SearchType implements EnumWithLabel {
   all('综合', api: Api.searchAll),
-  // 番剧：media_bangumi,
-  media_bangumi('番剧'),
-  // 影视：media_ft
-  media_ft('影视'),
-  // 直播间及主播：live
-  // live,
-  // 直播间：live_room
-  live_room('直播间'),
-  // 主播：live_user
-  // live_user,
-  // 话题：topic
-  // topic,
+  // 视频：video
+  video('视频'),
+  // 定制版：已移除 番剧(media_bangumi)、影视(media_ft)、直播间(live_room) 搜索
   // 用户：bili_user
   bili_user('用户'),
   // 专栏：article
