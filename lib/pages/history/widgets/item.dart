@@ -31,6 +31,8 @@ class HistoryItem extends StatelessWidget {
     final hasDuration = item.hasDuration;
     final business = item.history.business;
     final enableMultiSelect = ctr.enableMultiSelect.value;
+    int aid = item.history.oid!;
+    String bvid = item.history.bvid ?? IdUtils.av2bv(aid);
 
     // 定制版：观看记录不支持多选删除，长按无操作
     // ignore: unused_local_variable
