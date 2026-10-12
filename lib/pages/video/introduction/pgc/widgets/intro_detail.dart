@@ -7,7 +7,6 @@ import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/video/video_tag/data.dart';
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
-import 'package:PiliPlus/pages/pgc_review/view.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -100,10 +99,8 @@ class _IntroDetailState extends State<PgcIntroPanel>
       horizontalDragGestureRecognizer: horizontalDragGestureRecognizer,
       children: [
         KeepAliveWrapper(child: _buildInfo(theme)),
-        PgcReviewPage(
-          name: widget.item.title!,
-          mediaId: widget.item.mediaId,
-        ),
+        // 定制版：番剧点评页已移除（该面板本身已无入口，保留以兼容编译）
+        const Center(child: Text('番剧功能已停用')),
       ],
     );
   }
