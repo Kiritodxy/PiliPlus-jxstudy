@@ -141,132 +141,22 @@ class MineController extends GetxController with AccountMixin {
     }
   }
 
-  static void onChangeAnonymity() {
-    if (Accounts.account.isEmpty) {
-      SmartDialog.showToast('请先登录');
-      return;
-    }
-    final newVal = !anonymity.value;
-    anonymity.value = newVal;
-    if (newVal) {
-      SmartDialog.dismiss();
-      SmartDialog.show<bool>(
-        clickMaskDismiss: false,
-        usePenetrate: true,
-        displayTime: const Duration(seconds: 2),
-        alignment: Alignment.bottomCenter,
-        builder: (context) {
-          final theme = Theme.of(context);
-          final style = TextStyle(
-            color: theme.colorScheme.onSecondaryContainer,
-          );
-          return ColoredBox(
-            color: theme.colorScheme.secondaryContainer,
-            child: Padding(
-              padding: EdgeInsets.only(
-                top: 15,
-                left: 20,
-                right: 20,
-                bottom: MediaQuery.viewPaddingOf(context).bottom + 15,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      const Icon(MdiIcons.incognito, size: 20),
-                      const SizedBox(width: 10),
-                      Text('已进入无痕模式', style: theme.textTheme.titleMedium),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    '搜索不携带身份信息\n'
-                    '不产生查询或播放记录\n'
-                    '点赞等其它操作不受影响\n'
-                    '播放进度信息跟随视频取流\n'
-                    '上次观看分p信息跟随主账号\n'
-                    '(前往隐私设置了解详情)',
-                    style: theme.textTheme.bodySmall,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          SmartDialog.dismiss(result: true);
-                          SmartDialog.showToast('已设为永久无痕模式');
-                        },
-                        child: Text('保存为永久', style: style),
-                      ),
-                      const SizedBox(width: 10),
-                      TextButton(
-                        onPressed: () {
-                          SmartDialog.dismiss();
-                          SmartDialog.showToast('已设为临时无痕模式');
-                        },
-                        child: Text('仅本次（默认）', style: style),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ).then((res) {
-        if (res == false) {
-          return;
-        }
-        res == true
-            ? Accounts.set(AccountType.heartbeat, AnonymousAccount())
-            : Accounts.accountMode[AccountType.heartbeat.index] =
-                  AnonymousAccount();
-      });
-    } else {
-      Accounts.set(AccountType.heartbeat, Accounts.main);
-      SmartDialog.dismiss(result: false);
-      SmartDialog.show(
-        clickMaskDismiss: false,
-        usePenetrate: true,
-        displayTime: const Duration(seconds: 1),
-        alignment: Alignment.bottomCenter,
-        builder: (context) {
-          final theme = Theme.of(context);
-          return ColoredBox(
-            color: theme.colorScheme.secondaryContainer,
-            child: Padding(
-              padding: EdgeInsets.only(
-                top: 15,
-                left: 20,
-                right: 20,
-                bottom: MediaQuery.viewPaddingOf(context).bottom + 15,
-              ),
-              child: Row(
-                children: [
-                  const Icon(MdiIcons.incognitoOff, size: 20),
-                  const SizedBox(width: 10),
-                  Text('已退出无痕模式', style: theme.textTheme.titleMedium),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    }
-  }
   @override
   bool customHandleResponse(bool isRefresh, Success<FavFolderData> response) {
     favFolderCount = response.response.count;
     loadingState.value = response;
     return true;
+  }
+
   @override
   Future<LoadingState<FavFolderData>> customGetData() {
     return FavHttp.userfavFolder(
       pn: 1,
       ps: 20,
       mid: Accounts.main.mid,
+    );
+  }
+
   // 定制版：已移除无痕模式切换入口
 
   void onChangeTheme() {

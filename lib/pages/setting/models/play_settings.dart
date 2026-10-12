@@ -186,7 +186,7 @@ List<SettingsModel> get playSettings => [
       defaultVal: false,
     ),
   if ((Platform.isAndroid && PiliAndroidHelper.isPipAvailable) ||
-      (Platform.isIOS && IOSPipHelper.isAvailable))
+      (Platform.isIOS && IOSPipHelper.isAvailable)) ...[
     SwitchModel(
       title: '后台画中画',
       subtitle: '进入后台时以小窗形式（PiP）播放',
@@ -201,8 +201,8 @@ List<SettingsModel> get playSettings => [
             }
           : null,
     ),
-    // 定制版：弹幕功能已移除（画中画不加载弹幕）
   ],
+  // 定制版：弹幕功能已移除（画中画不加载弹幕）
   const SwitchModel(
     title: '全屏手势反向',
     subtitle: '默认播放器中部向上滑动进入全屏，向下退出\n开启后向下全屏，向上退出',
