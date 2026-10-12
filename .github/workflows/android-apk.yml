@@ -120,3 +120,11 @@ jobs:
                       ### 已声明的边界
                       - APK 未配置正式签名时使用 debug 签名，安装时若提示风险属正常现象
                       - 白名单采用「包含匹配」：搜索词中只要出现词库条目即放行
+
+                      ### 源码
+                      源码由 GitHub 在本仓库 tag 页底部自动提供（Source code zip / tar.gz），
+                      Release 不再单独上传源码包。
+
+                      ### 上游同步
+                      本仓库已重建为「上游完整历史 + 定制提交」，可用 `git fetch upstream && git merge upstream/main` 跟进；
+                      另有定时工作流每日检测上游更新（无冲突自动开 PR，有冲突自动开 Issue）。
