@@ -12,7 +12,6 @@ import 'package:PiliPlus/http/reply.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
-import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/pages/save_panel/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/color_utils.dart';
@@ -378,14 +377,9 @@ class AuthorPanel extends StatelessWidget {
                 onTap: () {
                   Get.back();
                   onBlock?.call();
-                  try {
-                    Get.find<DynamicsController>().tempBannedList.add(
-                      moduleAuthor.mid!,
-                    );
-                    SmartDialog.showToast(
-                      '已临时屏蔽${moduleAuthor.name}(${moduleAuthor.mid!})，重启恢复',
-                    );
-                  } catch (_) {}
+                  SmartDialog.showToast(
+                    '已临时屏蔽${moduleAuthor.name}(${moduleAuthor.mid!})，重启恢复',
+                  );
                 },
                 minLeadingWidth: 0,
               ),
