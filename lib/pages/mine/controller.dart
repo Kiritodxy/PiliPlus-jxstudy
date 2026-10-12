@@ -141,22 +141,6 @@ class MineController extends GetxController with AccountMixin {
     }
   }
 
-  @override
-  bool customHandleResponse(bool isRefresh, Success<FavFolderData> response) {
-    favFolderCount = response.response.count;
-    loadingState.value = response;
-    return true;
-  }
-
-  @override
-  Future<LoadingState<FavFolderData>> customGetData() {
-    return FavHttp.userfavFolder(
-      pn: 1,
-      ps: 20,
-      mid: Accounts.main.mid,
-    );
-  }
-
   // 定制版：已移除无痕模式切换入口
 
   void onChangeTheme() {

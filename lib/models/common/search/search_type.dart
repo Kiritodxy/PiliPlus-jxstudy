@@ -11,8 +11,6 @@ enum SearchType implements EnumWithLabel {
   bili_user('用户'),
   // 专栏：article
   article('专栏'),
-  // 视频：video
-  video('视频'),
   ;
 
   // 相簿：photo
@@ -25,9 +23,6 @@ enum SearchType implements EnumWithLabel {
 
   static const List<SearchType> actives = [
     .all,
-    .media_bangumi,
-    .media_ft,
-    .live_room,
     .bili_user,
     .article,
   ];
