@@ -1,255 +1,265 @@
 <div align="center">
-    <img width="200" height="200" src="assets/images/logo/logo.png">
+
+# PiliPlus 江西学习守护版
+
+**面向江西新高考（3+1+2）物化生选科的 B 站客户端定制版**
+
+内置 621 条学习白名单关键词 ｜ 无直播 ｜ 无番剧影视 ｜ 无消息私信 ｜ 观看记录不可删除
+
+[![Build Android APK](https://github.com/Kiritodxy/PiliPlus-jxstudy/actions/workflows/android-apk.yml/badge.svg)](https://github.com/Kiritodxy/PiliPlus-jxstudy/actions/workflows/android-apk.yml)
+[![License](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
+[![Based on](https://img.shields.io/badge/based%20on-PiliPlus%202.1.6-brightgreen)](https://github.com/bggRGjQaUbCoE/PiliPlus)
+
+**[下载 APK](../../releases)** ｜ **[定制说明](CUSTOM_BUILD_README.md)** ｜ **[上游项目](https://github.com/bggRGjQaUbCoE/PiliPlus)**
+
 </div>
 
+---
 
+## 目录
+
+- [这是什么](#这是什么)
+- [为什么做这个](#为什么做这个)
+- [功能特性](#功能特性)
+- [学习白名单说明](#学习白名单说明)
+- [下载安装](#下载安装)
+- [自行构建](#自行构建)
+- [如何继续修改](#如何继续修改)
+- [项目结构](#项目结构)
+- [已知边界](#已知边界)
+- [致谢与许可](#致谢与许可)
+
+---
+
+## 这是什么
+
+一个**家长视角的 B 站客户端**：保留 B 站的学习内容，砍掉所有娱乐入口，并且**搜索内容受白名单控制**。
+
+| 模块 | 处理方式 |
+|---|---|
+| 直播 | **完整移除**（页面、路由、Tab、设置项、外链唤起全部拦截） |
+| 番剧 / 影视 | **完整移除**（首页 Tab、搜索 Tab、追番收藏、播放入口） |
+| 消息 / 私信 | **完整移除**（私信、联系人、回复我的、@我的、收到的赞、系统消息） |
+| 观看记录 | **不可删除**，并显示「实际观看 03:25 / 12:40」 |
+| 搜索 | **白名单管控**：搜索词必须命中内置词库才放行 |
+
+应用名「PiliPlus 定制版」，包名 `com.custom.piliplus` —— **可与官方 PiliPlus 共存安装，互不影响**。
+
+---
+
+## 为什么做这个
+
+高中生用 B 站学习是常态（网课、真题解析、实验演示都在上面），但同一个 App 里也有短视频、直播、番剧——**自控力问题不该靠意志力硬扛**。
+
+这个版本的做法是：不禁止使用 B 站，而是把**搜索**这个入口管住。想搜「三角函数」「化学平衡」「细胞呼吸」随便搜；想搜「XX 综艺第三期」搜不出来。
+
+---
+
+## 功能特性
+
+### 1. 学习守护（核心）
+
+- 内置 **621 条**白名单关键词，覆盖江西新高考全部科目知识点
+- 「设置 → 学习白名单」可批量编辑词库（一行一条）
+- **家长密码**保护：未输入密码无法修改词库
+- **词库为空 = 全部禁止**（防止通过清空词库直接绕过）
+- 双重拦截：搜索提交前判断 + 网络层兜底
+
+### 2. 去除娱乐模块
+
+直播、番剧、影视、私信/消息四个模块的**页面文件、路由、Tab、设置项、外链唤起**全部删除。对于无法删除的数据解析层做了容错——接口返回直播/番剧数据时不会崩溃，只是进不去。
+
+各模块逐项改动清单见 [`CUSTOM_BUILD_README.md`](CUSTOM_BUILD_README.md)。
+
+### 3. 观看记录不可删除
+
+移除了所有删除入口：单条删除、长按多选删除、清空记录、删除已看记录、搜索页删除。并新增观看时长显示（数据来自 B 站历史接口自带的 `progress` 与 `duration` 字段，无需额外请求）。
+
+---
+
+## 学习白名单说明
+
+### 词库构成（621 条）
+
+| 分类 | 条数（约） | 说明 |
+|---|---|---|
+| 科目名 + 通用学习场景词 | 52 | 高中、高考、数学……真题、模拟题、学习方法、答题规范、一轮复习、错题 |
+| 数学（北师大版） | 85 | 江西高中数学**全省统一使用北师大版**（省教育厅官方答复 + 2025 秋省级教材价格表核实） |
+| 语文（统编/人教版） | 47 | 含信息类文本、情境默写、文言断句等新题型 |
+| 英语（人教版） | 38 | 含读后续写、七选五、语篇等 |
+| 物理（人教版） | 96 | 江西自主命题卷口径 |
+| 化学（人教版） | 111 | 同上 |
+| 生物（人教版） | 119 | 同上 |
+| 江西考情拓展词 | 73 | 见下 |
+
+### 为什么是「江西口径」
+
+江西 2021 年启动新高考、2024 年首届，实行 3+1+2：
+
+| 科目 | 命题方 | 试卷 |
+|---|---|---|
+| 语文、数学、外语 | 教育部统一命题 | **新课标Ⅰ卷** |
+| 物理、化学、生物、历史、政治、地理 | **江西省自主命题** | 江西卷 |
+
+因此本词库做了两件事：
+
+1. **补齐江西真题实际考过、但通用词库缺失的考点**：`阿伏加德罗常数`、`基元反应`、`反应历程`、`摩尔比法`、`分数坐标`、`氧空位`、`官能团保护`、`立体异构`、`离子检验`、`实验安全`、`硅酸盐`、`转化率`、`电离度`、`水解常数`、`有机推断`、`离子共存`、`双缝干涉`、`波的叠加`、`查理定律`、`玻意耳定律`、`折射率`、`临界角`、`完全非弹性碰撞`、`安培定则`、`列联表`、`母性影响`、`中性突变`、`密码子`、`细胞质雄性不育`、`细胞全能性`、`生态工程`、`物种丰富度`、`分级调节`、`反馈调节`、`生物防治`、`选择培养基`、`诱变育种`、`种群增长曲线`、`碳循环` 等。
+2. **剔除江西三年真题零出现的超纲技巧**：洛必达法则、泰勒展开、极值点偏移、同构法、隐零点、极点极线、蒙日圆、阿波罗尼斯圆、结构不良问题、双星系统、相对论、双极膜、等电子体、缓冲溶液、沉淀滴定、致死效应、从性遗传、光呼吸、短文改错、概要写作等 —— 这些是其他省或竞赛的常见拓展，江西不考，留着只会把词库撑大。
+
+### ⚠️ 匹配规则
+
+采用**包含匹配**：搜索词中只要**出现**词库里的任一条目即放行。
+
+- 搜「高中数学 三角函数」→ 命中「数学」→ 放行 ✅
+- 搜「细胞呼吸 讲解」→ 命中「细胞呼吸」→ 放行 ✅
+- 搜「速度与激情」→ 若词库里有裸词「速度」就会被放行 ❌ → **因此词库已把 `速度` 改为 `速度与加速度`**
+
+**留一个坦白的副作用**：`集合` 会让「集合啦！动物森友会」通过，`高考` 会让「湖北高考」通过——这是包含匹配的固有代价。如果发现孩子钻空子，把对应词条改得更具体即可（例如 `集合` → `集合运算`）。
+
+---
+
+## 下载安装
+
+1. 打开 [Releases](../../releases) 页面，下载最新版本的 APK
+2. 按手机 CPU 架构选择：
+   - **`arm64-v8a`** — 绝大多数手机选这个
+   - `armeabi-v7a` — 老旧 32 位机型
+   - `x86_64` — 模拟器
+3. 手机允许「安装未知来源应用」后安装
+
+**首次启动后请立刻做两件事**：
+- 设置 → 学习白名单 → 设置**家长密码**
+- 确认词库已生效（搜一个知识点试试）
+
+---
+
+## 自行构建
+
+### 方式一：GitHub Actions 云编译（推荐，不需要本地环境）
+
+1. Fork 本仓库
+2. 进入 **Actions → Build Android APK → Run workflow**
+3. 填写 `tag`（例如 `v2.1.6-custom.1`）→ 运行
+4. 构建完成后在 **Releases** 或本次运行的 **Artifacts** 中下载 APK
+
+> 全程约 15–25 分钟。若只需要 Artifact 不发布 Release，`tag` 留空即可。
+
+**可选：配置正式签名**（不配置也能装，只是用 debug 签名）
+在仓库 Settings → Secrets and variables → Actions 中添加：
+
+| Secret | 说明 |
+|---|---|
+| `SIGN_KEYSTORE_BASE64` | 密钥库文件的 base64（`base64 -w0 key.jks`） |
+| `KEYSTORE_PASSWORD` | 密钥库口令 |
+| `KEY_ALIAS` | 密钥别名 |
+| `KEY_PASSWORD` | 密钥口令 |
+
+### 方式二：本地构建
+
+前置：**Flutter 3.47.4 (stable)**、JDK 17+、Android SDK（platforms 36/37、build-tools 36.0.0、NDK 28.2.13676358）。
+
+```bash
+# 1. 拉依赖
+flutter pub get
+
+# 2. 生成版本注入文件（CI 中由脚本自动完成，本地需手动创建）
+cat > pili_release.json <<'EOF'
+{"pili.name":"2.1.6-custom.1","pili.code":1,"pili.hash":"local","pili.time":0}
+EOF
+
+# 3. 构建
+flutter build apk --release --split-per-abi --dart-define-from-file=pili_release.json --no-pub
+
+# 产物：build/app/outputs/flutter-apk/
+```
+
+> **中国大陆网络要点**：需替换 Gradle / Maven / pub / Flutter 引擎镜像，并在受限容器中注意 Gradle 堆内存与 Android Lint（详见 [`CUSTOM_BUILD_README.md`](CUSTOM_BUILD_README.md) 第三、四节，那里有本次实际踩坑的完整记录）。
+
+---
+
+## 如何继续修改
+
+### 改学习白名单
+
+**首选：改源码**（改完云编译，词库成为内置默认值，清 App 数据不会丢）
+
+编辑 `lib/utils/study_guard.dart`：
+
+```dart
+static const List<String> defaultWhitelist = <String>[
+  '高中',
+  '高考',
+  // ... 在这里增删
+];
+```
+
+⚠️ **两条硬约束**：
+1. 新增词条请**追加到数组末尾**——搜索页首页提示只显示 `whitelist.take(8)`，插到开头会改变首页提示文案。
+2. 避免加入过于宽泛的词（如裸词 `分子`、`翻译`、`集合`），否则会把娱乐内容一起放行。
+
+**备选：改 App 内置词库**（不用重新编译）
+进入「设置 → 学习白名单 → 批量编辑」，一行一个粘贴即可。缺点是清除 App 数据后会回退到内置默认值。
+
+### 改其他模块
+
+各定制模块的详细改动清单见 [`CUSTOM_BUILD_README.md`](CUSTOM_BUILD_README.md)，包含每一项改动对应的文件路径。
+
+### 同步上游
+
+```bash
+git remote add upstream https://github.com/bggRGjQaUbCoE/PiliPlus.git
+git fetch upstream
+git merge upstream/main    # 解决冲突后提交
+```
+
+---
+
+## 项目结构
+
+```
+├── .github/workflows/
+│   ├── android-apk.yml       # ★ 定制：Android 云编译（本仓库新增）
+│   └── build.yml             # 上游：多平台构建
+├── lib/
+│   ├── utils/
+│   │   ├── study_guard.dart             # ★ 学习守护核心：白名单 + 家长密码 + 放行判断
+│   │   └── storage_pref.dart            # 白名单持久化（引用同一常量）
+│   ├── pages/setting/pages/
+│   │   └── study_whitelist.dart         # ★ 白名单设置页（批量编辑 UI）
+│   ├── pages/search/
+│   │   ├── controller.dart              # 搜索入口拦截
+│   │   └── view.dart                    # 首页提示（只取前 8 条）
+│   └── http/search.dart                 # 网络层兜底拦截
+├── android/                  # 应用身份定制（包名 / 应用名 / 构建参数）
+├── CUSTOM_BUILD_README.md    # 完整定制说明与构建踩坑记录
+└── README_upstream.md        # 上游原版 README（留档）
+```
+
+带 ★ 的是本定制版最核心的三个文件。
+
+---
+
+## 已知边界
+
+坦诚声明，避免误解：
+
+1. **观看记录数据侧不可控**：App 内所有删除入口已移除，但记录存在 B 站服务器，用户用官方 App 或网页理论上仍可删除。
+2. **观看时长精度**：显示的是 B 站服务端记录的进度（`progress` 字段），快进会跳计，与「实际盯着看的秒数」可能有出入。
+3. **白名单是包含匹配**：存在被钻空子的可能（见上文「匹配规则」）。
+4. **签名**：未配置正式签名时使用 debug 签名。
+5. **合规声明**：本项目仅供个人学习与家庭监护使用，请勿用于商业用途或公开分发。B 站接口的使用请遵守其服务条款。
+
+---
+
+## 致谢与许可
+
+- 上游项目：[PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus) by [bggRGjQaUbCoE](https://github.com/bggRGjQaUbCoE)
+- 更早源头：[PiliPala](https://github.com/guozhigq/pilipala) / [PiliPalaX](https://github.com/orz12/PiliPalaX)
+- 本仓库遵循上游的 [GPL-3.0](LICENSE) 许可
+- 江西高考用卷口径依据：江西省教育考试院、江西省教育厅公开文件，以及 2024–2026 年江西卷真题与官方/权威教研评析
 
 <div align="center">
-    <h1>PiliPlus</h1>
-<div align="center">
 
-中文 | [English](README.en.md)
+**如果这个项目帮到了你，欢迎点个 Star ⭐**
 
-![GitHub repo size](https://img.shields.io/github/repo-size/bggRGjQaUbCoE/PiliPlus) 
-![GitHub Repo stars](https://img.shields.io/github/stars/bggRGjQaUbCoE/PiliPlus) 
-![GitHub all releases](https://img.shields.io/github/downloads/bggRGjQaUbCoE/PiliPlus/total) 
 </div>
-    <p>使用Flutter开发的BiliBili第三方客户端</p>
-    
-<img src="assets/screenshots/510shots_so.png" width="32%" alt="home" />
-<img src="assets/screenshots/174shots_so.png" width="32%" alt="home" />
-<img src="assets/screenshots/850shots_so.png" width="32%" alt="home" />
-<br/>
-<img src="assets/screenshots/main_screen.png" width="96%" alt="home" />
-<br/>
-</div>
-
-
-<br/>
-
-## 适配平台
-
-- [x] Android
-- [x] iOS
-- [x] Pad
-- [x] Windows
-- [x] Linux
-
-[![Packaging status](https://repology.org/badge/vertical-allrepos/piliplus.svg)](https://repology.org/project/piliplus/versions)
-
-## refactor
-
-- [ ] gRPC [wip]
-- [x] 用户界面
-- [x] 其他
-
-## feat
-
-- [x] 编辑动态
-- [x] DLNA 投屏
-- [x] 离线缓存/播放
-- [x] 移动端支持点击弹幕悬停，点赞、复制、举报 by [@My-Responsitories](https://github.com/My-Responsitories)
-- [x] 播放音频
-- [x] 跳过番剧片头/片尾
-- [x] 安卓端 `loudnorm` 适配 by [@My-Responsitories](https://github.com/My-Responsitories)
-- [x] Win/Mac 支持极验、短信登录 by [@My-Responsitories](https://github.com/My-Responsitories)
-- [x] 视频截取动图 by [@My-Responsitories](https://github.com/My-Responsitories)
-- [x] AI 原声翻译
-- [x] SuperChat
-- [x] 播放课堂视频
-- [x] 发起投票
-- [x] 发布动态/评论支持`富文本编辑`/`表情显示`/`@用户`
-- [x] 修改消息设置
-- [x] 修改聊天设置
-- [x] 展示折叠消息
-- [x] 查看用户图文
-- [x] 动态话题
-- [x] 直播分区
-- [x] 分享`视频`/`番剧`/`动态`/`专栏`/`直播`至消息
-- [x] 创建/修改/删除关注分组
-- [x] 移除粉丝
-- [x] 直播弹幕发送表情
-- [x] 收藏夹排序
-- [x] 稍后再看 ~~`未看`~~ / `未看完` / ~~`已看完`~~ 分类
-- [x] WebDAV 备份/恢复设置
-- [x] 保存评论/动态
-- [x] 高级弹幕 by [@My-Responsitories](https://github.com/My-Responsitories)
-- [x] 取消/置顶评论
-- [x] 记笔记
-- [x] 多账号支持 by [@My-Responsitories](https://github.com/My-Responsitories)
-- [x] 屏蔽带货动态/评论
-- [x] 互动视频
-- [x] 发评/动态反诈
-- [x] 高能进度条
-- [x] 滑动跳转预览视频缩略图
-- [x] Live Photo
-- [x] 复制/移动/排序收藏夹/稍后再看视频
-- [x] 超分辨率
-- [x] 合并弹幕
-- [x] 会员彩色弹幕
-- [x] 播放全部/继续播放/倒序播放
-- [x] Cookie登录
-- [x] 显示视频分段信息
-- [x] 调节字幕大小
-- [x] 调节全屏弹幕大小
-- [x] 收藏夹/稍后再看多选删除
-- [x] 搜索用户动态
-- [x] 直播弹幕
-- [x] 修改头像/用户名/签名/性别/生日
-- [x] 创建/编辑/删除收藏夹
-- [x] 评论楼中楼查看对话
-- [x] 评论楼中楼定位点击查看的评论
-- [x] 评论楼中楼按热度/时间排序
-- [x] 评论点踩
-- [x] 私信发图
-- [x] 投币动画
-- [x] 取消/追番，更新追番状态
-- [x] 取消/订阅合集
-- [x] SponsorBlock
-- [x] 显示视频完整合集
-- [x] 三连动画
-- [x] 番剧三连
-- [x] 带图评论
-- [x] 视频TAG
-- [x] 筛选搜索
-- [x] 转发动态
-- [x] 合集图片
-- [x] 删除/置顶/撤回私信
-- [x] 举报用户/评论/视频/动态
-- [x] 删除/发布/置顶文本/图片动态
-- [x] 其他
-
-## opt
-
-- [x] 专栏界面
-- [x] 私信界面
-- [x] 收藏面板
-- [x] PIP
-- [x] 视频封面
-- [x] 回复界面
-- [x] 系统通知
-- [x] 评论显示
-- [x] 亮度调节
-- [x] 视频播放
-- [x] 视频staff
-- [x] 防止bottomsheet遮挡全屏视频
-- [x] 其他
-
-## fix
-
-- [x] 番剧分集点赞/投币/收藏
-- [x] bugs
-
-<br/>
-
-## 功能
-
-- [x] 推荐视频列表(app端)
-- [x] 最热视频列表
-- [x] 热门直播
-- [x] 番剧列表
-- [x] 屏蔽黑名单内用户视频
-- [x] 无痕模式（播放视为未登录）
-- [x] 游客模式（推荐视为未登录）
-
-- [x] 用户相关
-  - [x] 粉丝、关注用户、拉黑用户查看
-  - [x] 用户主页查看
-  - [x] 关注/取关用户
-  - [x] 离线缓存
-  - [x] 稍后再看
-  - [x] 观看记录
-  - [x] 我的收藏
-  - [x] 站内私信
-  
-- [x] 动态相关
-  - [x] 全部、投稿、番剧分类查看
-  - [x] 动态评论查看
-  - [x] 动态评论回复功能
-
-- [x] 视频播放相关
-  - [x] 双击快进/快退
-  - [x] 双击播放/暂停
-  - [x] 垂直方向调节亮度/音量
-  - [x] 垂直方向上滑全屏、下滑退出全屏
-  - [x] 水平方向手势快进/快退
-  - [x] 全屏方向设置
-  - [x] 倍速选择/长按2倍速
-  - [x] 硬件加速（视机型而定）
-  - [x] 画质选择（高清画质未解锁）
-  - [x] 音质选择（视视频而定）
-  - [x] 解码格式选择（视视频而定）
-  - [x] 弹幕
-  - [x] 字幕
-  - [x] 记忆播放
-  - [x] 视频比例：高度/宽度适应、填充、包含等
-     
-- [x] 搜索相关
-  - [x] 热搜
-  - [x] 搜索历史
-  - [x] 默认搜索词
-  - [x] 投稿、番剧、直播间、用户搜索
-  - [x] 视频搜索排序、按时长筛选
-    
-- [x] 视频详情页相关
-  - [x] 视频选集(分p)切换
-  - [x] 点赞、投币、收藏/取消收藏
-  - [x] 相关视频查看
-  - [x] 评论用户身份标识
-  - [x] 评论(排序)查看、二楼评论查看
-  - [x] 主楼、二楼评论回复功能
-  - [x] 评论点赞
-  - [x] 评论笔记图片查看、保存
-
-- [x] 设置相关
-  - [x] 画质、音质、解码方式预设      
-  - [x] 图片质量设定
-  - [x] 主题模式：亮色/暗色/跟随系统
-  - [x] 震动反馈(可选)
-  - [x] 高帧率
-  - [x] 自动全屏
-  - [x] 横屏适配
-- [ ] 等等
-
-<br/>
-
-## 下载
-
-可以从 [Releases](https://github.com/bggRGjQaUbCoE/PiliPlus/releases) 下载，或克隆仓库拉取代码后在本地编译。
-
-<br/>
-
-## 声明
-
-此项目（PiliPlus）是个人为了兴趣而开发，仅用于学习和测试，请于下载后24小时内删除。
-所用API皆从官方网站收集，不提供任何破解内容。
-在此致敬原作者：[guozhigq/pilipala](https://github.com/guozhigq/pilipala)
-在此致敬上游作者：[orz12/PiliPalaX](https://github.com/orz12/PiliPalaX)
-本仓库做了更激进的修改，感谢原作者的开源精神。
-
-感谢使用
-
-
-<br/>
-
-## 致谢
-
-- [bilibili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect)
-- [flutter_meedu_videoplayer](https://github.com/zezo357/flutter_meedu_videoplayer)
-- [media-kit](https://github.com/media-kit/media-kit)
-- [dio](https://pub.dev/packages/dio)
-- 等等
-
-<br/>
-<br/>
-<br/>
-
-## Star History
-
-<a href="https://star-history.dera.page/#bggRGjQaUbCoE/PiliPlus&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=bggRGjQaUbCoE/PiliPlus&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=bggRGjQaUbCoE/PiliPlus&type=Date" />
-   <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=bggRGjQaUbCoE/PiliPlus&type=Date" />
- </picture>
-</a>
