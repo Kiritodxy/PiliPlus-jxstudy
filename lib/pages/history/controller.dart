@@ -1,4 +1,3 @@
-import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/models_new/history/data.dart';
@@ -71,8 +70,19 @@ class HistoryController
     if (isRefresh && type == null) {
       final tab = data.tab;
       if (tabs.isEmpty && tab != null && tab.isNotEmpty) {
-        tabs.value = tab;
-        tabController = TabController(length: tab.length + 1, vsync: this);
+        // 定制版：过滤掉「直播」等非视频类观看记录标签页
+        final filtered = tab.where((e) {
+          final t = e.type ?? '';
+          final n = e.name ?? '';
+          return t != 'live' &&
+              t != 'article' &&
+              !n.contains('直播') &&
+              !n.contains('专栏');
+        }).toList();
+        if (filtered.isNotEmpty) {
+          tabs.value = filtered;
+          tabController = TabController(length: filtered.length + 1, vsync: this);
+        }
       }
     }
 
@@ -90,49 +100,11 @@ class HistoryController
     }
   }
 
-  // 删除某条历史记录
-  void delHistory(HistoryItemModel item) {
-    _onDelete({item});
-  }
 
-  // 删除已看历史记录
-  void onDelViewedHistory() {
-    final viewedList = loadingState.value.dataOrNull
-        ?.where((e) => e.progress == -1)
-        .toSet();
-    if (viewedList != null && viewedList.isNotEmpty) {
-      _onDelete(viewedList);
-    } else {
-      SmartDialog.showToast('无已看记录');
-    }
-  }
-
-  Future<void> _onDelete(Set<HistoryItemModel> removeList) async {
-    SmartDialog.showLoading(msg: '请求中');
-    final res = await UserHttp.delHistory(
-      removeList
-          .map((item) => '${item.history.business}_${item.kid}')
-          .join(','),
-      account: account,
-    );
-    SmartDialog.dismiss();
-    if (res.isSuccess) {
-      afterDelete(removeList);
-      SmartDialog.showToast('已删除');
-    } else {
-      res.toast();
-    }
-  }
-
-  // 删除选中的记录
+  // 定制版：观看记录不可删除
   @override
   void onRemove() {
-    showConfirmDialog(
-      context: Get.context!,
-      title: const Text('提示'),
-      content: const Text('确认删除所选历史记录吗？'),
-      onConfirm: () => _onDelete(allChecked.toSet()),
-    );
+    SmartDialog.showToast('观看记录不可删除');
   }
 
   @override

@@ -34,11 +34,10 @@ class _HistorySearchPageState
           controller.onLoadMore();
         }
         final item = list[index];
+        // 定制版：观看记录不可删除
         return HistoryItem(
           item: item,
           ctr: controller,
-          onDelete: (kid, business) =>
-              controller.onDelHistory(index, kid, business),
         );
       },
       itemCount: list.length,

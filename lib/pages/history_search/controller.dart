@@ -27,20 +27,6 @@ class HistorySearchController
 
   final account = Accounts.history;
 
-  Future<void> onDelHistory(int index, kid, String business) async {
-    final res = await UserHttp.delHistory(
-      '${business}_$kid',
-      account: account,
-    );
-    if (res.isSuccess) {
-      loadingState
-        ..value.data!.removeAt(index)
-        ..refresh();
-      SmartDialog.showToast('已删除');
-    } else {
-      res.toast();
-    }
-  }
 
   @override
   void onRemove() {

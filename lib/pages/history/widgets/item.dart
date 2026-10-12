@@ -9,7 +9,6 @@ import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -18,13 +17,11 @@ import 'package:material_ui/material_ui.dart';
 class HistoryItem extends StatelessWidget {
   final HistoryItemModel item;
   final MultiSelectBase ctr;
-  final void Function(int kid, String business) onDelete;
 
   const HistoryItem({
     super.key,
     required this.item,
     required this.ctr,
-    required this.onDelete,
   });
 
   @override
@@ -34,20 +31,73 @@ class HistoryItem extends StatelessWidget {
     final business = item.history.business;
     final enableMultiSelect = ctr.enableMultiSelect.value;
 
-    final onLongPress = enableMultiSelect
-        ? null
-        : () => ctr
-            ..enableMultiSelect.value = true
-            ..onSelect(item);
+    // 定制版：观看记录不支持多选删除，长按无操作
+    // ignore: unused_local_variable
 
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
         onTap: enableMultiSelect
             ? () => ctr.onSelect(item)
-            : () => onPushHistory(item),
-        onLongPress: onLongPress,
-        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+            : () async {
+                if (business?.contains('article') == true) {
+                  PageUtils.toDupNamed(
+                    '/articlePage',
+                    parameters: {
+                      'id': business == 'article-list'
+                          ? '${item.history.cid}'
+                          : '${item.history.oid}',
+                      'type': 'read',
+                    },
+                  );
+                } else if (business == 'live') {
+                  if (item.liveStatus == 1) {
+                    PageUtils.toLiveRoom(item.history.oid);
+                  } else {
+                    SmartDialog.showToast('直播未开播');
+                  }
+                } else if (business == 'pgc') {
+                  PageUtils.viewPgc(
+                    epId: item.history.epid,
+                    progress: item.playbackProgress,
+                  );
+                } else if (business == 'cheese') {
+                  if (item.uri?.isNotEmpty == true) {
+                    PageUtils.viewPgcFromUri(
+                      item.uri!,
+                      isPgc: false,
+                      aid: item.history.oid,
+                      progress: item.playbackProgress,
+                    );
+                  }
+                } else {
+                  int? cid = item.history.cid;
+                  Dimension? dimension;
+                  if (cid == null) {
+                    if (await SearchHttp.ab2cWithDimension(
+                          aid: aid,
+                          bvid: bvid,
+                          part: item.history.page,
+                        )
+                        case final res?) {
+                      cid = res.cid;
+                      dimension = res.dimension;
+                    }
+                  }
+                  if (cid != null) {
+                    // TODO: dimension
+                    PageUtils.toVideoPage(
+                      aid: aid,
+                      bvid: bvid,
+                      cid: cid,
+                      cover: item.cover,
+                      title: item.title,
+                      dimension: dimension,
+                      progress: item.playbackProgress,
+                    );
+                  }
+                }
+              },
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -145,17 +195,6 @@ class HistoryItem extends StatelessWidget {
                         ],
                       ),
                     ),
-                  PopupMenuItem(
-                    onTap: () => onDelete(item.kid!, business!),
-                    height: 38,
-                    child: const Row(
-                      children: [
-                        Icon(Icons.close_outlined, size: 16),
-                        SizedBox(width: 6),
-                        Text('删除记录', style: TextStyle(fontSize: 13)),
-                      ],
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -166,6 +205,8 @@ class HistoryItem extends StatelessWidget {
   }
 
   Widget content(ThemeData theme) {
+    // 定制版：实际观看时长（供下方显示）
+    final hasDuration = item.duration != null && item.duration != 0;
     return Expanded(
       child: Column(
         spacing: 2,
@@ -193,6 +234,24 @@ class HistoryItem extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           const Spacer(),
+          // 定制版：显示实际观看时长
+          if (hasDuration)
+            Builder(builder: (context) {
+              final watched = item.progress == -1
+                  ? DurationUtils.formatDuration(item.duration)
+                  : DurationUtils.formatDuration(item.progress);
+              final label = item.progress == -1
+                  ? '已看完 · 全长 $watched'
+                  : '实际观看 $watched / ${DurationUtils.formatDuration(item.duration)}';
+              return Text(
+                label,
+                style: TextStyle(
+                  fontSize: theme.textTheme.labelMedium!.fontSize,
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w500,
+                ),
+              );
+            }),
           if (item.authorName?.isNotEmpty == true)
             Text(
               item.authorName!,
