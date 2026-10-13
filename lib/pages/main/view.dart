@@ -503,14 +503,15 @@ class _MainAppState extends PopScopeState<MainApp>
     if (_mainController.mainTabBarView) {
       child = TabBarView(
         controller: _mainController.controller,
-        physics: const NeverScrollableScrollPhysics(),
+        // 定制版：允许左右滑动切换页面
         scrollDirection: _mainController.useBottomNav ? .horizontal : .vertical,
         children: _mainController.navigationBars.map((i) => i.page).toList(),
       );
     } else {
       child = PageView(
         controller: _mainController.controller,
-        physics: const NeverScrollableScrollPhysics(),
+        // 定制版：允许左右滑动切换页面
+        onPageChanged: _mainController.onPageChanged,
         children: _mainController.navigationBars.map((i) => i.page).toList(),
       );
     }

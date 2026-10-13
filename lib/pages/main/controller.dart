@@ -64,6 +64,14 @@ class MainController extends GetxController
             length: navigationBars.length,
           )
         : PageController(initialPage: selectedIndex.value);
+    // 定制版：滑动切换页面时同步底部导航选中态
+    if (mainTabBarView) {
+      controller.addListener(() {
+        if (!controller.indexIsChanging) {
+          onPageChanged(controller.index);
+        }
+      });
+    }
 
     hideBottomBar =
         !useSideBar && navigationBars.length > 1 && Pref.hideBottomBar;
@@ -144,6 +152,18 @@ class MainController extends GetxController
       }
     } else {
       // 定制版：首页仅保留搜索入口、动态模块已移除，双击不再触发刷新/回顶
+    }
+  }
+
+  /// 定制版：滑动切换页面时由 PageView/TabBarView 回调，仅同步选中态
+  void onPageChanged(int value) {
+    final changed = selectedIndex.value != value;
+    selectedIndex.value = value;
+    if (changed &&
+        value >= 0 &&
+        value < navigationBars.length &&
+        navigationBars[value] == NavigationBarType.home) {
+      checkDefaultSearch();
     }
   }
 
