@@ -160,10 +160,6 @@ class _SettingPageState extends State<SettingPage> {
         ListTile(
           leading: const Icon(Icons.school_outlined),
           title: Text('学习白名单', style: titleStyle),
-          subtitle: Text(
-            '仅允许搜索指定关键词（修改需家长密码）',
-            style: subTitleStyle,
-          ),
           onTap: () {
             checkParentPassword(context).then((ok) {
               if (ok) Get.to(() => const StudyWhitelistPage());
