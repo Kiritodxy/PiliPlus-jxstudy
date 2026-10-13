@@ -80,11 +80,19 @@ jobs:
               run: |
                   git commit -q -m "chore: 合并上游 ${{ steps.fetch.outputs.short }}"
                   git push -q origin "${{ steps.trial.outputs.branch }}"
-                  gh pr create \
-                    --base main \
-                    --head "${{ steps.trial.outputs.branch }}" \
-                    --title "同步上游 PiliPlus ${{ steps.fetch.outputs.short }}（自动合并无冲突）" \
-                    --body-file /tmp/upstream_report.md
+                  TITLE="同步上游 PiliPlus ${{ steps.fetch.outputs.short }}（自动合并无冲突）"
+                  # 去重：同标题的 PR 已存在则只追加评论，不重复创建
+                  EXISTING=$(gh pr list --state open --search "$TITLE in:title" --json number --jq '.[0].number')
+                  if [ -n "$EXISTING" ]; then
+                    echo "PR #$EXISTING 已存在，追加评论"
+                    gh pr comment "$EXISTING" --body-file /tmp/upstream_report.md
+                  else
+                    gh pr create \
+                      --base main \
+                      --head "${{ steps.trial.outputs.branch }}" \
+                      --title "$TITLE" \
+                      --body-file /tmp/upstream_report.md
+                  fi
 
             - name: 有冲突 -> 开 Issue 提醒
               if: steps.fetch.outputs.behind != '0' && steps.trial.outputs.clean != 'true'
