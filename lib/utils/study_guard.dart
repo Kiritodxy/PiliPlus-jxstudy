@@ -648,6 +648,18 @@ abstract final class StudyGuard {
   static Future<void> resetWhitelist() =>
       GStorage.setting.put(SettingBoxKey.searchWhitelist, defaultWhitelist);
 
+  /// 定制版：白名单搜索总开关。
+  /// 默认关闭 —— 关闭时不限制搜索内容（等同原版体验）；
+  /// 打开后仅放行命中词库的搜索。开关位于「学习白名单」页（需家长密码）。
+  static bool get allowSearchEnabled =>
+      GStorage.setting.get(
+        SettingBoxKey.allowWhitelistSearch,
+        defaultValue: false,
+      );
+
+  static Future<void> setAllowSearchEnabled(bool value) =>
+      GStorage.setting.put(SettingBoxKey.allowWhitelistSearch, value);
+
   /// 家长密码，空字符串表示尚未设置
   static String get parentPassword =>
       GStorage.setting.get(SettingBoxKey.parentPassword, defaultValue: '');

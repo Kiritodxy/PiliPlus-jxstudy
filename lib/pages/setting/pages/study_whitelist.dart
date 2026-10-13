@@ -18,6 +18,14 @@ class StudyWhitelistPage extends StatefulWidget {
 class _StudyWhitelistPageState extends State<StudyWhitelistPage> {
   late List<String> _list = StudyGuard.whitelist;
   final TextEditingController _ctr = TextEditingController();
+  /// 定制版：白名单搜索总开关（默认关闭）
+  late bool _allowSearch = StudyGuard.allowSearchEnabled;
+
+  Future<void> _toggleAllowSearch(bool value) async {
+    await StudyGuard.setAllowSearchEnabled(value);
+    setState(() => _allowSearch = value);
+    SmartDialog.showToast(value ? '已开启白名单搜索' : '已关闭白名单搜索');
+  }
 
   Future<void> _save() async {
     await StudyGuard.saveWhitelist(_list);
@@ -127,6 +135,25 @@ class _StudyWhitelistPageState extends State<StudyWhitelistPage> {
       ),
       body: Column(
         children: [
+          // 定制版：白名单搜索总开关（默认关闭 -> 搜索不受限）
+          SwitchListTile(
+            value: _allowSearch,
+            onChanged: _toggleAllowSearch,
+            secondary: Icon(
+              _allowSearch ? Icons.shield_outlined : Icons.shield_moon_outlined,
+            ),
+            title: const Text('启用白名单搜索限制'),
+            subtitle: Text(
+              _allowSearch
+                  ? '已开启：仅允许命中词库的搜索'
+                  : '已关闭：搜索不受限制（默认）',
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.outline,
+              ),
+            ),
+          ),
+          const Divider(height: 1),
           Padding(
             padding: const .fromLTRB(16, 14, 16, 8),
             child: Row(

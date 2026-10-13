@@ -243,8 +243,9 @@ abstract final class SettingBoxKey {
       liveCdnUrl = 'liveCdnUrl',
       saveReply = 'saveReply',
       appFont = 'appFont',
-      // 定制版：学习白名单词库 + 家长密码
+      // 定制版：学习白名单词库 + 家长密码 + 白名单搜索开关
       searchWhitelist = 'searchWhitelist',
+      allowWhitelistSearch = 'allowWhitelistSearch',
       parentPassword = 'parentPassword';
 }
 

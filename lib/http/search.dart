@@ -50,8 +50,7 @@ abstract final class SearchHttp {
     required SearchType searchType,
     required String keyword,
     required page,
-    // 定制版：最后一道防线。即便绕过搜索页直接构造结果页路由，
-    // 白名单外的关键词也不会真正发起网络请求。
+    // 定制版：白名单开关见 http/search.dart 函数体首行
     String? order,
     int? duration,
     int? tids,
@@ -63,7 +62,9 @@ abstract final class SearchHttp {
     String? gaiaVtoken,
     required ValueChanged<String> onSuccess,
   }) async {
-    if (!StudyGuard.allowSearch(keyword)) {
+    // 定制版：白名单搜索开关打开时才是最后一道防线。
+    // 即便绕过搜索页直接构造结果页路由，白名单外的关键词也不会真正发起网络请求。
+    if (StudyGuard.allowSearchEnabled && !StudyGuard.allowSearch(keyword)) {
       return const Error(null);
     }
 
