@@ -47,7 +47,7 @@ class _SearchPageState extends State<SearchPage> {
         child: ViewInsetsSafeArea(
           child: CustomScrollView(
             slivers: [
-              if (_searchController.allowSearchEnabled) _buildWhitelistTip(),
+              if (_searchController.allowSearchEnabled) _buildWhitelistTip,
               _buildHistory,
               SliverPadding(padding: .only(bottom: padding.bottom)),
             ],
