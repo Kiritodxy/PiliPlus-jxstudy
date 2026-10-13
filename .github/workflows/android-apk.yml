@@ -83,7 +83,7 @@ jobs:
             - name: 重命名产物
               run: |
                   mkdir -p dist
-                  cp build/app/outputs/flutter-apk/app-release.apk dist/PiliPlus_jxstudy_arm64-v8a.apk
+                  cp build/app/outputs/flutter-apk/app-release.apk "dist/PiliPlus_${{ github.event.inputs.tag || github.ref_name }}.apk"
                   ls -lh dist/
 
             - name: 上传构建产物（Artifact）
@@ -113,7 +113,7 @@ jobs:
                       - **仅提供 arm64-v8a 版本**（适配主流 64 位 ARM 机型，安装包更小）
 
                       ### 安装说明
-                      下载 `PiliPlus_jxstudy_arm64-v8a.apk` 直接安装即可。
+                      下载 `PiliPlus_${{ github.event.inputs.tag || github.ref_name }}.apk` 直接安装即可。
                       此包仅支持 64 位 ARM 设备（2017 年后绝大多数安卓手机），
                       x86_64 模拟器与老旧 32 位机型不适用。
 
