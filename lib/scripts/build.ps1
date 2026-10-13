@@ -29,18 +29,15 @@ try {
     $updatedContent | Set-Content -Path 'pubspec.yaml' -Encoding UTF8
 
     $buildTime = [int]([DateTimeOffset]::Now.ToUnixTimeSeconds())
-    $tag = ''
-    try {
-        $tag = (git describe --tags --exact-match HEAD 2>$null).Trim()
-    } catch {
-        $tag = ''
-    }
+    # 定制版：取当前提交对应的 tag（无 tag 时为空串），用于更新检测精确比对
+    $tag = git tag --points-at HEAD | Select-Object -First 1
+    if ($null -eq $tag) { $tag = '' }
     $data = @{
         'pili.name' = $versionName
         'pili.code' = $versionCode
         'pili.hash' = $commitHash
         'pili.time' = $buildTime
-        'pili.tag' = $tag
+        'pili.tag' = "$tag"
     }
 
     $data | ConvertTo-Json -Compress | Out-File 'pili_release.json' -Encoding UTF8
