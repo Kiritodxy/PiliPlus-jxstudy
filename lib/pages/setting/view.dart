@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/models/common/setting_type.dart';
+import 'package:PiliPlus/pages/about/view.dart';
 import 'package:PiliPlus/pages/setting/common_setting.dart';
 import 'package:PiliPlus/pages/setting/pages/study_whitelist.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
@@ -53,6 +54,12 @@ class _SettingPageState extends State<SettingPage> {
       subtitle: '震动、搜索、收藏、ai、评论、代理等',
       icon: Icon(Icons.extension_outlined),
     ),
+    // 定制版：恢复「关于」入口（内含自动更新检查）
+    _SettingsModel(
+      type: SettingType.about,
+      subtitle: '版本信息、自动更新、缓存、导入导出',
+      icon: Icon(Icons.info_outline),
+    ),
   ];
 
   @override
@@ -85,10 +92,13 @@ class _SettingPageState extends State<SettingPage> {
                   ),
                   Expanded(
                     flex: 6,
-                    child: CommonSetting(
-                      settingType: _type,
-                      showAppBar: false,
-                    ),
+                    child: switch (_type) {
+                      .about => const AboutPage(showAppBar: false),
+                      _ => CommonSetting(
+                        settingType: _type,
+                        showAppBar: false,
+                      ),
+                    },
                   ),
                 ],
               ),
@@ -104,7 +114,10 @@ class _SettingPageState extends State<SettingPage> {
   void _toPage(SettingType type) {
     if (_isPortrait) {
       Get.to(
-        () => CommonSetting(settingType: type),
+        () => switch (type) {
+          .about => const AboutPage(),
+          _ => CommonSetting(settingType: type),
+        },
       );
     } else {
       _type = type;

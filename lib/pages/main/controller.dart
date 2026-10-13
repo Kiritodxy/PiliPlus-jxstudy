@@ -11,6 +11,7 @@ import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/update.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -49,7 +50,10 @@ class MainController extends GetxController
   @override
   void onInit() {
     super.onInit();
-    // 定制版：已移除联网检测新版本（APP 更新模块）
+    // 定制版：恢复启动时自动检测新版本（可在 关于 页手动检查）
+    if (Pref.autoUpdate) {
+      Update.checkUpdate();
+    }
 
     setNavBarConfig();
 
