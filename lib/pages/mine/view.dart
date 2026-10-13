@@ -1,6 +1,9 @@
 
+import 'dart:async';
+
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/player_bar.dart';
@@ -10,6 +13,7 @@ import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/common/common_page.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
+import 'package:PiliPlus/pages/mine/widgets/fav_item.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
@@ -86,7 +90,10 @@ class _MediaPageState extends CommonPageState<MinePage>
                   children: [
                     _buildUserInfo(theme, secondary),
                     _buildActions(secondary),
-                    // 定制版：已移除「我的收藏」模块
+                    // 定制版：仅恢复「我的收藏」
+                    // （观看记录 / 稍后再看 / 我的订阅 仍保持隐藏，不随设置恢复）
+                    for (final tab in controller.mineTabs)
+                      if (tab == .favorite) Obx(_buildFav),
                   ],
                 ),
               ),
@@ -278,5 +285,107 @@ class _MediaPageState extends CommonPageState<MinePage>
   }
 
 
-  // 定制版：已移除「我的收藏」模块及其刷新逻辑
+  void _autoRefresh(MineRefreshMixin tabCtr) => Timer(
+    const Duration(milliseconds: 150),
+    () => tabCtr.onRefresh(isManual: false),
+  );
+
+  // 定制版：仅渲染「我的收藏」
+  Widget _buildFav() {
+    return _buildTab(
+      .favorite,
+      controller.favCtr!,
+      itemBuilder: (element) => FavFolderItem(
+        item: element,
+        onPop: () => _autoRefresh(controller.favCtr!),
+      ),
+      onPushDetail: () => Get.toNamed(
+        '/fav',
+      )?.whenComplete(() => _autoRefresh(controller.favCtr!)),
+    );
+  }
+
+  Widget _buildTab<R, T>(
+    MineTabType tab,
+    MineRefreshMixin<R, T> tabCtr, {
+    required Widget Function(T element) itemBuilder,
+    required VoidCallback onPushDetail,
+  }) {
+    final Widget child;
+    switch (tabCtr.loadingState.value) {
+      case Loading():
+        return const SizedBox.shrink();
+      case Success(:final response):
+        if (response == null || response.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        child = SizedBox(
+          height: 180,
+          child: ListView.separated(
+            itemCount: response.length,
+            controller: tabCtr.scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const .only(left: 20, top: 10, right: 20),
+            itemBuilder: (context, index) {
+              if (index == response.length - 1) {
+                tabCtr.onLoadMore();
+              }
+              return SizedBox(width: 180, child: itemBuilder(response[index]));
+            },
+            scrollDirection: .horizontal,
+            separatorBuilder: (_, _) => const SizedBox(width: 14),
+          ),
+        );
+      case Error(:final errMsg):
+        if (errMsg == null) return const SizedBox.shrink();
+        child = SizedBox(
+          height: 160,
+          child: Center(child: Text(errMsg, textAlign: .center)),
+        );
+    }
+    final secondary = theme.colorScheme.secondary;
+    return Column(
+      children: [
+        Divider(
+          height: 20,
+          color: theme.colorScheme.outline.withValues(alpha: 0.1),
+        ),
+        ListTile(
+          dense: true,
+          onTap: onPushDetail,
+          title: Padding(
+            padding: const EdgeInsets.only(left: 10),
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '${tab.label}  ',
+                    style: const TextStyle(fontSize: 16, fontWeight: .bold),
+                  ),
+                  if (tabCtr.count != null)
+                    TextSpan(
+                      text: '${tabCtr.count}  ',
+                      style: TextStyle(color: secondary),
+                    ),
+                  WidgetSpan(
+                    child: Icon(
+                      Icons.arrow_forward_ios,
+                      size: 18,
+                      color: secondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          trailing: IconButton(
+            tooltip: '刷新',
+            onPressed: tabCtr.onRefresh,
+            icon: const Icon(Icons.refresh, size: 20),
+          ),
+        ),
+        child,
+      ],
+    );
+  }
 }
