@@ -13,4 +13,7 @@ abstract final class BuildConfig {
     'pili.hash',
     defaultValue: 'N/A',
   );
+  /// 定制版：构建时对应的 git tag（非 tag 构建时为空字符串），
+  /// 用于更新检测精确比对，避免「永远提示有新版本」。
+  static const String tag = String.fromEnvironment('pili.tag');
 }

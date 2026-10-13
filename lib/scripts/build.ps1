@@ -29,12 +29,18 @@ try {
     $updatedContent | Set-Content -Path 'pubspec.yaml' -Encoding UTF8
 
     $buildTime = [int]([DateTimeOffset]::Now.ToUnixTimeSeconds())
-
+    $tag = ''
+    try {
+        $tag = (git describe --tags --exact-match HEAD 2>$null).Trim()
+    } catch {
+        $tag = ''
+    }
     $data = @{
         'pili.name' = $versionName
         'pili.code' = $versionCode
         'pili.hash' = $commitHash
         'pili.time' = $buildTime
+        'pili.tag' = $tag
     }
 
     $data | ConvertTo-Json -Compress | Out-File 'pili_release.json' -Encoding UTF8
