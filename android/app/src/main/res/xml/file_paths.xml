@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 定制版：应用内更新下载的 APK 通过 FileProvider 以 content:// 形式交给安装器。
+     路径与 Dart 侧 path_provider 的 getExternalStorageDirectory() 对应
+     （Android/data/<applicationId>/files）。 -->
+<paths>
+    <external-files-path
+        name="updates"
+        path="updates/" />
+</paths>

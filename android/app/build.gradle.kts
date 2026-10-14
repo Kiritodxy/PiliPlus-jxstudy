@@ -119,6 +119,12 @@ kotlin {
     }
 }
 
+dependencies {
+    // 定制版：应用内更新安装用 FileProvider 把 APK 以 content:// 交给安装器
+    // （Android 7.0+ 禁止 file:// URI 跨进程传递）
+    implementation("androidx.core:core:1.13.1")
+}
+
 flutter {
     source = "../.."
 }

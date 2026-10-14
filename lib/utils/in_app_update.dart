@@ -1,0 +1,170 @@
+import 'dart:io' show Directory, File, Platform;
+
+import 'package:dio/dio.dart';
+import 'package:flutter/services.dart' show MethodChannel;
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+
+/// 定制版：应用内下载更新包并直接唤起系统安装器（替代原先跳浏览器下载）。
+///
+/// - 下载到应用私有外部目录 `Android/data/<applicationId>/files/updates/`：
+///   免存储权限，且与 AndroidManifest 里 FileProvider 的 `updates/` 路径一一对应。
+/// - 支持多镜像依次重试：前一个失败自动换下一个。
+/// - 下载完成后通过 MethodChannel `com.custom.piliplus/update` 调用原生安装
+///   （Android 7.0+ 必须用 content:// URI，见 AndroidHelper.installApk）。
+abstract final class InAppUpdate {
+  static const _channel = MethodChannel('com.custom.piliplus/update');
+
+  /// 已下载完成、等待安装的文件路径（用于「未授权未知来源」授权后重试安装）
+  static String? _pendingApk;
+
+  /// [urls] 为同一文件的多个候选地址（镜像在前、原始地址在最后），依次重试。
+  static Future<void> downloadAndInstall({
+    required List<String> urls,
+    required String fileName,
+  }) async {
+    if (!Platform.isAndroid) return;
+    SmartDialog.dismiss();
+    try {
+      final extDir = await getExternalStorageDirectory();
+      if (extDir == null) {
+        SmartDialog.showToast('无法获取下载目录，已取消');
+        return;
+      }
+      final dir = Directory(path.join(extDir.path, 'updates'));
+      if (!dir.existsSync()) dir.createSync(recursive: true);
+      final filePath = path.join(dir.path, fileName);
+      final file = File(filePath);
+
+      final progress = ValueNotifier<double>(-1); // 负值表示总大小未知
+      final cancelToken = CancelToken();
+      SmartDialog.show(
+        animationType: SmartAnimationType.centerFade_otherSlide,
+        builder: (context) => AlertDialog(
+          title: const Text('正在下载更新'),
+          content: ValueListenableBuilder<double>(
+            valueListenable: progress,
+            builder: (context, value, _) => Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                LinearProgressIndicator(value: value < 0 ? null : value),
+                const SizedBox(height: 12),
+                Text(
+                  value < 0
+                      ? '正在连接…'
+                      : '${(value * 100).toStringAsFixed(1)}%',
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  fileName,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: ColorScheme.of(context).outline,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                cancelToken.cancel();
+                SmartDialog.dismiss();
+              },
+              child: const Text('取消'),
+            ),
+          ],
+        ),
+      );
+
+      final dio = Dio(
+        BaseOptions(
+          connectTimeout: const Duration(seconds: 20),
+          receiveTimeout: const Duration(minutes: 10),
+        ),
+      );
+
+      Object? lastError;
+      var ok = false;
+      for (var i = 0; i < urls.length; i++) {
+        try {
+          // 每个镜像都从头下载（部分镜像不支持 Range，续传反而会拿到损坏文件）
+          if (file.existsSync()) file.deleteSync();
+          progress.value = -1;
+          await dio.download(
+            urls[i],
+            filePath,
+            cancelToken: cancelToken,
+            onReceiveProgress: (count, total) {
+              progress.value = total > 0 ? count / total : -1;
+            },
+          );
+          ok = true;
+          break;
+        } on DioException catch (e) {
+          if (CancelToken.isCancel(e)) rethrow;
+          lastError = e;
+        }
+      }
+
+      SmartDialog.dismiss();
+      progress.dispose();
+
+      if (!ok) {
+        SmartDialog.showToast('下载失败：${lastError ?? '无可用下载地址'}');
+        return;
+      }
+      if (file.existsSync() && file.lengthSync() > 0) {
+        await installDownloaded(filePath);
+      } else {
+        SmartDialog.showToast('下载失败：文件为空');
+      }
+    } catch (e) {
+      SmartDialog.dismiss();
+      if (e is! DioException || !CancelToken.isCancel(e)) {
+        SmartDialog.showToast('下载失败：$e');
+      }
+    }
+  }
+
+  /// 唤起系统安装器；若「安装未知应用」未授权，先跳到系统授权页，授权后引导再次点击安装。
+  static Future<void> installDownloaded(String filePath) async {
+    if (!Platform.isAndroid) return;
+    _pendingApk = filePath;
+    final String? res;
+    try {
+      res = await _channel.invokeMethod<String>('installApk', {
+        'path': filePath,
+      });
+    } catch (e) {
+      SmartDialog.showToast('唤起安装器失败：$e');
+      return;
+    }
+    if (res == null) return; // 已成功唤起安装器
+    if (res == 'need install permission') {
+      SmartDialog.show(
+        builder: (context) => AlertDialog(
+          title: const Text('需要安装权限'),
+          content: const Text(
+            '已为你打开「安装未知应用」设置页，请允许本应用安装应用后返回，点击下方按钮继续安装。',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                SmartDialog.dismiss();
+                final pending = _pendingApk;
+                if (pending != null) installDownloaded(pending);
+              },
+              child: const Text('我已授权，继续安装'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      SmartDialog.showToast('安装失败：$res');
+    }
+  }
+}

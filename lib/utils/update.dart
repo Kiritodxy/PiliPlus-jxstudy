@@ -6,6 +6,7 @@ import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
+import 'package:PiliPlus/utils/in_app_update.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -159,14 +160,23 @@ abstract final class Update {
   static Future<void> onDownload(Map data, {String? ext}) async {
     SmartDialog.dismiss();
     try {
+      // 定制版：Android 走应用内下载 → 直接唤起安装器；其他平台仍跳浏览器
+      String? androidUrl;
+      String? androidName;
       void download(String plat) {
         if (data['assets'].isNotEmpty) {
           for (Map<String, dynamic> i in data['assets']) {
             final String name = i['name'];
             if (name.contains(plat) &&
                 (ext == null || ext.isEmpty ? true : name.endsWith(ext))) {
-              // 定制版：GitHub 直连下载慢，改走加速镜像
-              PageUtils.launchURL(_accelerate(i['browser_download_url']));
+              final String raw = i['browser_download_url'];
+              if (Platform.isAndroid) {
+                androidUrl = raw;
+                androidName = name;
+              } else {
+                // 定制版：GitHub 直连下载慢，改走加速镜像
+                PageUtils.launchURL(_accelerate(raw));
+              }
               return;
             }
           }
@@ -179,6 +189,16 @@ abstract final class Update {
         AndroidDeviceInfo androidInfo = await DeviceInfoPlugin().androidInfo;
         // [arm64-v8a]
         download(androidInfo.supportedAbis.first);
+        if (androidUrl != null) {
+          // 镜像在前、GitHub 原始地址兜底；依次重试
+          await InAppUpdate.downloadAndInstall(
+            urls: [
+              for (final m in _ghMirrors) '$m$androidUrl',
+              androidUrl!,
+            ],
+            fileName: androidName ?? 'PiliPlus_update.apk',
+          );
+        }
       } else {
         download(Platform.operatingSystem);
       }

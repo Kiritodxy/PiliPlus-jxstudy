@@ -32,75 +32,94 @@ class ParticleBackgroundLayer extends StatelessWidget {
   }
 }
 
-/// 动态粒子背景（移植自开源项目 Rinne Mobile 的 LauncherParticleView）。
+/// 全局共享的「粒子世界」。
 ///
-/// 7 种样式：floating / rain / star / sakura / fireflies / constellation / ripples。
-/// 纯 Canvas 绘制，无素材、无额外依赖。
-class ParticleBackground extends StatefulWidget {
-  const ParticleBackground({super.key, required this.style});
+/// 所有页面（首页/我的、搜索页、设置页及其子页）复用**同一批粒子**与**同一个 Ticker**，
+/// 因此页面切换时画面连续：粒子不会重新生成，动画相位也不会重置。
+/// 仅当没有任何页面在显示时才会停止 Ticker（省电，与原先关闭背景时零开销一致）。
+class _ParticleWorld {
+  _ParticleWorld._();
 
-  final ParticleStyle style;
+  static final _ParticleWorld instance = _ParticleWorld._();
 
-  @override
-  State<ParticleBackground> createState() => _ParticleBackgroundState();
-}
-
-class _ParticleBackgroundState extends State<ParticleBackground>
-    with SingleTickerProviderStateMixin {
   static const int _particleCount = 56;
   static const int _sakuraActive = 20;
   static const int _ripplesActive = 8;
 
-  late final Ticker _ticker;
   final _rnd = math.Random(20260704);
-  final List<_Particle> _particles = [];
-  Size _size = Size.zero;
-  Duration _last = Duration.zero;
+  final List<_Particle> particles = [];
+  Size size = Size.zero;
+  Duration last = Duration.zero;
+  ParticleStyle style = ParticleStyle.floating;
 
-  @override
-  void initState() {
-    super.initState();
-    _ticker = createTicker(_onTick)..start();
-  }
+  final Set<VoidCallback> _listeners = <VoidCallback>{};
+  Ticker? _ticker;
 
-  @override
-  void didUpdateWidget(covariant ParticleBackground old) {
-    super.didUpdateWidget(old);
-    if (widget.style != old.style) _rebuild();
-  }
-
-  @override
-  void dispose() {
-    _ticker.dispose();
-    super.dispose();
-  }
-
-  void _rebuild() {
-    _particles.clear();
-    if (_size.isEmpty) return;
-    for (var i = 0; i < _particleCount; i++) {
-      _particles.add(_create(i, _size));
+  /// 页面挂载：多个页面同时存在时也只有第一个负责驱动 Ticker
+  void attach(VoidCallback repaint, ParticleStyle value) {
+    _listeners.add(repaint);
+    if (_listeners.length != 1) return;
+    if (style != value) setStyle(value);
+    _ticker ??= Ticker(_onTick);
+    if (!_ticker!.isActive) {
+      last = Duration.zero; // 重新进入时首帧不推进，避免跳跃
+      _ticker!.start();
     }
+  }
+
+  void detach(VoidCallback repaint) {
+    _listeners.remove(repaint);
+    if (_listeners.isNotEmpty) return;
+    _ticker?.stop();
+    last = Duration.zero;
+  }
+
+  /// 用户在设置里切换样式时重建粒子
+  void setStyle(ParticleStyle value) {
+    if (style == value) return;
+    style = value;
+    particles
+      ..clear()
+      ..addAll(_build());
+    _notify();
+  }
+
+  /// 同步当前页面的可见尺寸：粒子坐标**保持不变**（跨页面绝对连续），
+  /// 越界的粒子由 update 里的回绕逻辑自然带回画面内。
+  void resize(Size value) {
+    size = value;
+    if (particles.isEmpty) particles.addAll(_build());
+  }
+
+  List<_Particle> _build() {
+    if (size.isEmpty) return const [];
+    return List<_Particle>.generate(_particleCount, (i) => _create(i, size));
   }
 
   void _onTick(Duration elapsed) {
-    final dt = _last == Duration.zero
+    final dt = last == Duration.zero
         ? 0.0
         : math.min(
-            (elapsed - _last).inMicroseconds / 1000000.0,
+            (elapsed - last).inMicroseconds / 1000000.0,
             0.04,
           ); // 上限 40ms，避免后台回前台跳帧
-    _last = elapsed;
-    if (_size.isEmpty) return;
-    for (final p in _particles) {
-      p.update(dt, _size, widget.style, _rnd);
+    last = elapsed;
+    if (size.isEmpty || particles.isEmpty) return;
+    for (final p in particles) {
+      p.update(dt, size, style, _rnd);
     }
-    setState(() {});
+    _notify();
+  }
+
+  void _notify() {
+    for (final f in _listeners.toList(growable: false)) {
+      f();
+    }
   }
 
   _Particle _create(int index, Size size) {
     final p = _Particle();
-    final style = widget.style;
+    final style = this.style;
     p.x = _rnd.nextDouble() * size.width;
     p.y = _rnd.nextDouble() * size.height;
     switch (style) {
@@ -170,28 +189,62 @@ class _ParticleBackgroundState extends State<ParticleBackground>
     Color(0xFFFF6484),
     Color(0xFF9672FF),
   ];
+}
+
+/// 动态粒子背景（移植自开源项目 Rinne Mobile 的 LauncherParticleView）。
+///
+/// 7 种样式：floating / rain / star / sakura / fireflies / constellation / ripples。
+/// 纯 Canvas 绘制，无素材、无额外依赖。
+///
+/// 实例本身不持有粒子数据——数据在全局 `_ParticleWorld` 里，多个页面共享同一套画面。
+class ParticleBackground extends StatefulWidget {
+  const ParticleBackground({super.key, required this.style});
+
+  final ParticleStyle style;
+
+  @override
+  State<ParticleBackground> createState() => _ParticleBackgroundState();
+}
+
+class _ParticleBackgroundState extends State<ParticleBackground> {
+  final _ParticleWorld _world = _ParticleWorld.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _world.attach(_repaint, widget.style);
+  }
+
+  void _repaint() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void didUpdateWidget(covariant ParticleBackground old) {
+    super.didUpdateWidget(old);
+    if (widget.style != old.style) _world.setStyle(widget.style);
+  }
+
+  @override
+  void dispose() {
+    _world.detach(_repaint);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = Size(constraints.maxWidth, constraints.maxHeight);
-        if (size != _size) {
-          // 首帧或尺寸变化时重建粒子
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            _size = size;
-            _rebuild();
-          });
-        }
+        _world.resize(size);
         return IgnorePointer(
           child: CustomPaint(
             size: size,
             painter: _ParticlePainter(
-              particles: _particles,
-              style: widget.style,
-              palette: _palette,
-              timeSeconds: _last.inMicroseconds / 1000000.0,
+              particles: _world.particles,
+              style: _world.style,
+              palette: _ParticleWorld._palette,
+              timeSeconds: _world.last.inMicroseconds / 1000000.0,
             ),
           ),
         );
@@ -199,7 +252,6 @@ class _ParticleBackgroundState extends State<ParticleBackground>
     );
   }
 }
-
 class _Particle {
   double x = 0, y = 0, radius = 0;
   double speedX = 0, speedY = 0, length = 0;
@@ -261,7 +313,7 @@ class _Particle {
           rippleProgress = 0;
           x = rnd.nextDouble() * w;
           y = rnd.nextDouble() * h;
-          colorIndex = rnd.nextInt(_ParticleBackgroundState._palette.length);
+          colorIndex = rnd.nextInt(_ParticleWorld._palette.length);
         }
       case ParticleStyle.rain:
       case ParticleStyle.floating:

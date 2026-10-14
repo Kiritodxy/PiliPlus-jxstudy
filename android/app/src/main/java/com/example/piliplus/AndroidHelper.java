@@ -31,9 +31,11 @@ import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.core.content.FileProvider;
 
 import com.github.dart_lang.jni_flutter.JniFlutterPlugin;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -299,6 +301,45 @@ public final class AndroidHelper {
         } catch (Exception ignored) {
         }
         return false;
+    }
+
+    /**
+     * 定制版：应用内下载更新后直接唤起系统安装器。
+     * 通过 FileProvider 把下载到应用私有目录的 APK 以 content:// 形式交给安装器
+     * （Android 7.0+ 禁止 file:// URI 跨进程传递）。
+     * Android 8.0+ 若未授权「安装未知应用」，安装器会自动弹系统授权引导页。
+     *
+     * @param path APK 的绝对路径
+     * @return null 表示已成功唤起；否则返回错误描述
+     */
+    public static String installApk(@NonNull String path) {
+        try {
+            Context context = getContext();
+            File file = new File(path);
+            if (!file.exists()) {
+                return "file not found: " + path;
+            }
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            Uri uri = FileProvider.getUriForFile(
+                    context, context.getPackageName() + ".fileprovider", file);
+            intent.setDataAndType(uri, "application/vnd.android.package-archive");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                // 未授权时会跳转系统的「安装未知应用」设置页，用户授权后返回再次点击即可安装
+                if (!context.getPackageManager().canRequestPackageInstalls()) {
+                    Intent settings = new Intent(
+                            Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                            Uri.parse("package:" + context.getPackageName()));
+                    settings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(settings);
+                    return "need install permission";
+                }
+            }
+            context.startActivity(intent);
+            return null;
+        } catch (Exception e) {
+            return e.toString();
+        }
     }
 
     public static String openUrl(@NonNull String url) {

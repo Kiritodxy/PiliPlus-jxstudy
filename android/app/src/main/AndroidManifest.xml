@@ -208,6 +208,15 @@
             </intent-filter>
         </activity>
         <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+        <provider
             android:name=".BiliDocumentsProvider"
             android:permission="android.permission.MANAGE_DOCUMENTS"
             android:enabled="false"
@@ -248,6 +257,8 @@
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 定制版：应用内下载更新并直接唤起安装器（Android 8.0+ 未知来源授权由系统弹窗引导） -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
