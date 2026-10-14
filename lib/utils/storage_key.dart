@@ -246,7 +246,10 @@ abstract final class SettingBoxKey {
       // 定制版：学习白名单词库 + 家长密码 + 白名单搜索开关
       searchWhitelist = 'searchWhitelist',
       allowWhitelistSearch = 'allowWhitelistSearch',
-      parentPassword = 'parentPassword';
+      parentPassword = 'parentPassword',
+      // 定制版：动态粒子背景
+      enableParticleBg = 'enableParticleBg',
+      particleStyle = 'particleStyle';
 }
 
 abstract final class LocalCacheKey {
@@ -254,12 +257,8 @@ abstract final class LocalCacheKey {
       blackMids = 'blackMids',
       danmakuFilterRules = 'danmakuFilterRules',
       mixinKey = 'mixinKey',
-      timeStamp = 'timeStamp',
-      // 定制版：动态粒子背景
-      enableParticleBg = 'enableParticleBg',
-      particleStyle = 'particleStyle';
+      timeStamp = 'timeStamp';
 }
-
 abstract final class VideoBoxKey {
   static const String playRepeat = 'playRepeat',
       playSpeedDefault = 'playSpeedDefault',
