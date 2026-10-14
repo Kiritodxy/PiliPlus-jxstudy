@@ -41,8 +41,10 @@ class AboutPage extends StatefulWidget {
 }
 
 class _AboutPageState extends State<AboutPage> {
-  final currentVersion =
-      '${BuildConfig.versionName}+${BuildConfig.versionCode}';
+  // 定制版：优先显示构建时对应的 tag（如 v2.1.6-custom.4-arm64），无 tag 时回退旧格式
+  final currentVersion = BuildConfig.tag.isNotEmpty
+      ? BuildConfig.tag
+      : '${BuildConfig.versionName}+${BuildConfig.versionCode}';
   RxString cacheSize = ''.obs;
 
   late int _pressCount = 0;
