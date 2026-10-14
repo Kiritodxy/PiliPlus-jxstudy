@@ -53,13 +53,24 @@ abstract final class Update {
         }
         return;
       }
-      final data = res.data[0];
-      // 定制版：优先用 tag 精确比对（构建时若打了 tag，本机 BuildConfig.tag 即当前 tag）。
-      // 否则回退到构建时间比对；把比较基准改为「>= 即视为最新」，避免同秒内反复提示。
-      final String remoteTag = '${data['tag_name'] ?? ''}';
+      final List<dynamic> releaseList = res.data as List;
+      final data = releaseList[0];
+      // 定制版：用「公开 tag 列表」精确判定是否有更新版本，而不是简单地「与本机 tag 不相等」。
+      // 1) 公开列表首条 == 本机 tag        → 已是最新（不提示）
+      // 2) 本机 tag 在公开列表里但非首条   → 确有更新版本（提示）
+      // 3) 本机 tag 不在公开列表（draft/未发布/本地自构建）→ 不提示，避免误报
+      final List<String> remoteTags = releaseList
+          .map((e) => '${(e as Map)['tag_name'] ?? ''}')
+          .where((e) => e.isNotEmpty)
+          .toList();
+      final String remoteTag = remoteTags.isNotEmpty ? remoteTags.first : '';
       final bool hasNewVersion;
       if (BuildConfig.tag.isNotEmpty && remoteTag.isNotEmpty) {
-        hasNewVersion = remoteTag != BuildConfig.tag;
+        if (remoteTag == BuildConfig.tag) {
+          hasNewVersion = false;
+        } else {
+          hasNewVersion = remoteTags.contains(BuildConfig.tag);
+        }
       } else {
         final int latest =
             DateTime.parse(data['created_at']).millisecondsSinceEpoch ~/
