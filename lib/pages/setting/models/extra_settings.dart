@@ -292,7 +292,7 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.searchSuggestion,
     defaultVal: true,
   ),
-  const SwitchModel(
+  SwitchModel(
     title: '展示头像/评论/动态装饰',
     leading: const Icon(MdiIcons.stickerCircleOutline),
     setKey: SettingBoxKey.showDecorate,
