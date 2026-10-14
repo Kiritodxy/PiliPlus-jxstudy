@@ -15,6 +15,7 @@ import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/common/mine_tab_type.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
+import 'package:PiliPlus/models/common/particle_style.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
 import 'package:PiliPlus/models/common/theme/theme_type.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
@@ -46,6 +47,29 @@ import 'package:material_ui/material_ui.dart' hide StatefulBuilder;
 import 'package:path/path.dart' as path;
 
 List<SettingsModel> get styleSettings => [
+  // 定制版：动态粒子背景（默认开启；仅在首页 / 我的 / 搜索页显示）
+  SwitchModel(
+    title: '动态背景',
+    subtitle: '在首页 / 我的 / 搜索页显示动态粒子背景',
+    leading: const Icon(Icons.auto_awesome_outlined),
+    setKey: SettingBoxKey.enableParticleBg,
+    defaultVal: true,
+    onChanged: (value) {
+      GlobalData().enableParticleBg.value = value;
+    },
+  ),
+  PopupModel(
+    title: '动态背景样式',
+    leading: const Icon(Icons.grain_outlined),
+    value: () => Pref.particleStyle,
+    items: ParticleStyle.values,
+    onSelected: (value, setState) {
+      GStorage.setting
+          .put(SettingBoxKey.particleStyle, value.index)
+          .whenComplete(setState);
+      GlobalData().particleStyle.value = value;
+    },
+  ),
   if (PlatformUtils.isDesktop) ...[
     const SwitchModel(
       title: '显示窗口标题栏',

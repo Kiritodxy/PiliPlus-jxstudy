@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/widgets/floating_navigation_bar.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/main_layout.dart';
+import 'package:PiliPlus/common/widgets/particle_background.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/home/view.dart';
@@ -547,7 +548,10 @@ class _MainAppState extends PopScopeState<MainApp>
       child: MainLayout(
         sideBar: sideBar,
         bottomNav: bottomNav,
-        body: Padding(padding: padding, child: child),
+        // 定制版：首页 / 我的 统一叠加动态粒子背景（底栏与侧栏之下、页面内容之下）
+        body: ParticleBackgroundLayer(
+          child: Padding(padding: padding, child: child),
+        ),
       ),
     );
 

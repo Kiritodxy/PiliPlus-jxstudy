@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/particle_background.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/sliver_wrap.dart';
 import 'package:PiliPlus/common/widgets/view_insets_safe_area.dart';
@@ -40,15 +41,17 @@ class _SearchPageState extends State<SearchPage> {
     // 保留：搜索历史（记录全部关键词，长按单条删除、可清空）
     return SimpleScaffold(
       appBar: _buildAppBar,
-      body: Padding(
-        padding: .only(left: padding.left, right: padding.right),
-        child: ViewInsetsSafeArea(
-          child: CustomScrollView(
-            slivers: [
-              if (_searchController.allowSearchEnabled) _buildWhitelistTip,
-              _buildHistory,
-              SliverPadding(padding: .only(bottom: padding.bottom)),
-            ],
+      body: ParticleBackgroundLayer(
+        child: Padding(
+          padding: .only(left: padding.left, right: padding.right),
+          child: ViewInsetsSafeArea(
+            child: CustomScrollView(
+              slivers: [
+                if (_searchController.allowSearchEnabled) _buildWhitelistTip,
+                _buildHistory,
+                SliverPadding(padding: .only(bottom: padding.bottom)),
+              ],
+            ),
           ),
         ),
       ),

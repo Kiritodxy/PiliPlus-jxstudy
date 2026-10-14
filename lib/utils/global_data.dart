@@ -1,4 +1,5 @@
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:get/get.dart';
 
 class GlobalData {
   int imgQuality = Pref.picQuality;
@@ -16,6 +17,9 @@ class GlobalData {
   bool dynamicsWaterfallFlow = Pref.dynamicsWaterfallFlow;
 
   bool showMedal = Pref.showMedal;
+  // 定制版：动态粒子背景（Rx 以便设置改动后立即生效）
+  final enableParticleBg = Pref.enableParticleBg.obs;
+  final particleStyle = Pref.particleStyle.obs;
 
   // 私有构造函数
   GlobalData._();

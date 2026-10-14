@@ -14,6 +14,7 @@ import 'package:PiliPlus/models/common/mine_tab_type.dart';
 import 'package:PiliPlus/utils/study_guard.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
+import 'package:PiliPlus/models/common/particle_style.dart';
 import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
@@ -701,6 +702,15 @@ abstract final class Pref {
     SettingBoxKey.hideBottomBar,
     defaultValue: PlatformUtils.isMobile,
   );
+
+  // 定制版：动态粒子背景（默认开启，默认样式浮动光点）
+  static bool get enableParticleBg =>
+      _setting.get(SettingBoxKey.enableParticleBg, defaultValue: true);
+  static ParticleStyle get particleStyle =>
+      ParticleStyle.values[_setting.get(
+        SettingBoxKey.particleStyle,
+        defaultValue: ParticleStyle.floating.index,
+      )];
 
   static BarHideType get barHideType =>
       BarHideType.values[_setting.get(
