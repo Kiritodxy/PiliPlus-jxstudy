@@ -293,12 +293,6 @@ List<SettingsModel> get extraSettings => [
     defaultVal: true,
   ),
   const SwitchModel(
-    title: '记录搜索历史',
-    leading: Icon(Icons.history),
-    setKey: SettingBoxKey.recordSearchHistory,
-    defaultVal: true,
-  ),
-  SwitchModel(
     title: '展示头像/评论/动态装饰',
     leading: const Icon(MdiIcons.stickerCircleOutline),
     setKey: SettingBoxKey.showDecorate,

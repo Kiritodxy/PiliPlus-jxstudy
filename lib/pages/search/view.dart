@@ -4,8 +4,6 @@ import 'package:PiliPlus/common/widgets/view_insets_safe_area.dart';
 import 'package:PiliPlus/pages/search/controller.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -156,7 +154,6 @@ class _SearchPageState extends State<SearchPage> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      _recordBtn,
                       const Spacer(),
                       TextButton.icon(
                         style: const ButtonStyle(
@@ -208,37 +205,4 @@ class _SearchPageState extends State<SearchPage> {
       },
     );
   }
-
-  Widget get _recordBtn => Obx(
-    () {
-      bool enable = _searchController.recordSearchHistory.value;
-      return TextButton.icon(
-        style: const ButtonStyle(
-          visualDensity: .compact,
-          tapTargetSize: .shrinkWrap,
-          padding: WidgetStatePropertyAll(.symmetric(horizontal: 10)),
-        ),
-        onPressed: () {
-          enable = !enable;
-          _searchController.recordSearchHistory.value = enable;
-          GStorage.setting.put(
-            SettingBoxKey.recordSearchHistory,
-            enable,
-          );
-        },
-        icon: Icon(
-          enable ? Icons.history : Icons.history_toggle_off,
-          size: 18,
-          color: theme.colorScheme.secondary,
-        ),
-        label: Text(
-          enable ? '记录搜索' : '无痕搜索',
-          style: TextStyle(
-            height: 1,
-            color: theme.colorScheme.secondary,
-          ),
-        ),
-      );
-    },
-  );
 }

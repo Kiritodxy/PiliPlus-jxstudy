@@ -6,7 +6,6 @@ import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/study_guard.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -54,8 +53,6 @@ class BaseSearchController extends GetxController {
   final historyList = List<String>.from(
     GStorage.historyWord.get('cacheList') ?? const <String>[],
   ).obs;
-
-  final recordSearchHistory = Pref.recordSearchHistory.obs;
 }
 
 class SSearchController extends GetxController {
@@ -74,7 +71,6 @@ class SSearchController extends GetxController {
   final RxBool showUidBtn = false.obs;
 
   // history
-  RxBool get recordSearchHistory => _baseCtr.recordSearchHistory;
   RxList<String> get historyList => _baseCtr.historyList;
 
   /// 定制版：白名单搜索总开关（关闭时搜索不受限）
@@ -132,13 +128,12 @@ class SSearchController extends GetxController {
       return;
     }
 
-    if (recordSearchHistory.value) {
-      final index = historyList.indexOf(text);
-      if (index != 0) {
-        if (index != -1) historyList.removeAt(index);
-        historyList.insert(0, text);
-        GStorage.historyWord.put('cacheList', historyList);
-      }
+    // 定制版：已在搜索页移除「无痕搜索」开关，搜索历史始终记录
+    final int hisIndex = historyList.indexOf(text);
+    if (hisIndex != 0) {
+      if (hisIndex != -1) historyList.removeAt(hisIndex);
+      historyList.insert(0, text);
+      GStorage.historyWord.put('cacheList', historyList);
     }
 
     searchFocusNode.unfocus();
