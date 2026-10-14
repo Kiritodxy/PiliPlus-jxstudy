@@ -112,6 +112,8 @@ class _StudyWhitelistPageState extends State<StudyWhitelistPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return SimpleScaffold(
+      // 定制版：叠加动态粒子背景
+      particle: true,
       appBar: AppBar(
         title: const Text('学习白名单'),
         actions: [

@@ -60,6 +60,8 @@ class _AboutPageState extends State<AboutPage> {
     final padding = MediaQuery.viewPaddingOf(context);
     return SimpleScaffold(
       appBar: showAppBar ? AppBar(title: const Text('关于')) : null,
+      // 定制版：独立打开时叠加动态粒子背景（横屏内嵌于设置主页时不重复叠加）
+      particle: showAppBar,
       body: ListView(
         padding: EdgeInsets.only(
           left: showAppBar ? padding.left : 0,

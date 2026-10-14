@@ -80,6 +80,8 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
       context,
     ).copyWith(top: 0, bottom: 0);
     return SimpleScaffold(
+      // 定制版：叠加动态粒子背景
+      particle: true,
       appBar: AppBar(title: const Text('选择应用主题')),
       body: ListView(
         padding: .only(

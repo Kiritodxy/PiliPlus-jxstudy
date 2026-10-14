@@ -63,6 +63,8 @@ class _SetDisplayModeState extends State<SetDisplayMode> {
   @override
   Widget build(BuildContext context) {
     return SimpleScaffold(
+      // 定制版：叠加动态粒子背景
+      particle: true,
       appBar: AppBar(title: const Text('屏幕帧率设置')),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

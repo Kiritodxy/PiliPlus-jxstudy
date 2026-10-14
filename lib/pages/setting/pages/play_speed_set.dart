@@ -183,6 +183,8 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return SimpleScaffold(
+      // 定制版：叠加动态粒子背景
+      particle: true,
       appBar: AppBar(
         title: const Text('倍速设置'),
         actions: [

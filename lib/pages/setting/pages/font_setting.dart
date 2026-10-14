@@ -149,6 +149,8 @@ class _FontSettingPageState extends State<FontSettingPage> {
       customFonts = null;
     }
     return SimpleScaffold(
+      // 定制版：叠加动态粒子背景
+      particle: true,
       appBar: AppBar(
         title: const Text('App字体设置'),
         actions: [

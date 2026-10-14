@@ -69,6 +69,8 @@ class _BarSetPageState extends State<BarSetPage> with ReorderMixin {
   @override
   Widget build(BuildContext context) {
     return SimpleScaffold(
+      // 定制版：叠加动态粒子背景
+      particle: true,
       appBar: AppBar(
         title: Text('$title编辑'),
         actions: [

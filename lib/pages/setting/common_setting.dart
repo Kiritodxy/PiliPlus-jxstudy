@@ -50,6 +50,8 @@ class _CommonSettingState extends State<CommonSetting> {
     final showAppBar = widget.showAppBar;
     return SimpleScaffold(
       appBar: showAppBar ? AppBar(title: Text(widget.settingType.title)) : null,
+      // 定制版：独立打开时叠加动态粒子背景（横屏内嵌于设置主页时不重复叠加）
+      particle: showAppBar,
       body: ListView.builder(
         key: ValueKey(widget.settingType),
         padding: EdgeInsets.only(

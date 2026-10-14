@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:PiliPlus/common/widgets/particle_background.dart';
 import 'package:PiliPlus/common/widgets/slotted_layout_helper.dart';
 import 'package:flutter/rendering.dart' show ChildLayoutHelper;
 import 'package:material_ui/material_ui.dart';
@@ -10,12 +11,16 @@ class SimpleScaffold extends StatelessWidget {
     this.backgroundColor,
     this.fab,
     this.appBar,
+    this.particle = false,
     required this.body,
   });
 
   final Color? backgroundColor;
   final Widget? fab;
   final Widget? appBar;
+
+  /// 定制版：为 true 时在 body 下叠加动态粒子背景（设置类页面用）
+  final bool particle;
   final Widget body;
 
   @override
@@ -25,7 +30,7 @@ class SimpleScaffold extends StatelessWidget {
       child: ScaffoldLayout(
         fab: fab,
         appBar: appBar,
-        body: body,
+        body: particle ? ParticleBackgroundLayer(child: body) : body,
       ),
     );
   }
