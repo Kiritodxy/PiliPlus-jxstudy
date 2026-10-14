@@ -14,7 +14,6 @@ import 'package:PiliPlus/pages/common/common_page.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/mine/widgets/fav_item.dart';
-import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
@@ -190,7 +189,6 @@ class _MediaPageState extends CommonPageState<MinePage>
     // 定制版：已移除硬币、经验相关样式
     return Obx(() {
       final userInfo = controller.userInfo.value;
-      final levelInfo = userInfo.levelInfo;
       final isVip = userInfo.vipStatus != null && userInfo.vipStatus! > 0;
       return Column(
         mainAxisSize: MainAxisSize.min,
@@ -263,11 +261,7 @@ class _MediaPageState extends CommonPageState<MinePage>
                               overflow: .ellipsis,
                             ),
                           ),
-                          BiliUtils.levelPicture(
-                            levelInfo?.currentLevel ?? 0,
-                            isSeniorMember: userInfo.isSeniorMember == 1,
-                            height: 10,
-                          ),
+                          // 定制版：已移除 lv 等级图标
                         ],
                       ),
                       // 定制版：已移除硬币数量、经验数值与经验进度条
