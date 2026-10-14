@@ -138,3 +138,6 @@ jobs:
                   name: ${{ github.event.inputs.tag || github.ref_name }}
                   files: dist/*.apk
                   body_path: RELEASE_BODY.md
+                  # 定制版发布纪律：默认发为草稿（draft），装机实测通过后再手动转为正式发布，
+                  # 避免未验证的包直接公开。转正：PATCH /repos/{o}/{r}/releases/{id} {"draft":false}
+                  draft: true
