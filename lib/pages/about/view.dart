@@ -3,16 +3,13 @@ import 'dart:io';
 
 import 'package:PiliPlus/build_config.dart';
 import 'package:PiliPlus/common/assets.dart';
-import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/services/logger.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/update.dart';
@@ -89,8 +86,8 @@ class _AboutPageState extends State<AboutPage> {
           ),
           ListTile(
             title: Text(
-              // 定制版：此处原为应用名（PiliPlus），改为显示当前版本号
-              currentVersion,
+              // 定制版：此处原为应用名（PiliPlus），改为显示「当前版本 + 版本号」
+              '当前版本 $currentVersion',
               textAlign: TextAlign.center,
               style: theme.textTheme.titleMedium!.copyWith(height: 2),
             ),
@@ -118,34 +115,6 @@ class _AboutPageState extends State<AboutPage> {
                 : () => Utils.copyText(currentVersion),
             title: const Text('检测更新'),
             leading: const Icon(Icons.system_update_outlined),
-            trailing: Icon(Icons.arrow_forward, size: 16, color: outline),
-          ),
-          ListTile(
-            title: Text(
-              '''
-Build Time: ${DateFormatUtils.format(BuildConfig.buildTime, format: DateFormatUtils.longFormatDs)}
-Commit Hash: ${BuildConfig.commitHash}''',
-              style: const TextStyle(fontSize: 14),
-            ),
-            leading: const Icon(Icons.info_outline),
-            onTap: () => PageUtils.launchURL(
-              '${Constants.sourceCodeUrl}/commit/${BuildConfig.commitHash}',
-            ),
-            onLongPress: () => Utils.copyText(BuildConfig.commitHash),
-            onSecondaryTap: PlatformUtils.isMobile
-                ? null
-                : () => Utils.copyText(BuildConfig.commitHash),
-          ),
-          Divider(
-            thickness: 1,
-            height: 30,
-            color: theme.colorScheme.outlineVariant,
-          ),
-          ListTile(
-            onTap: () =>
-                PageUtils.launchURL('${Constants.sourceCodeUrl}/issues'),
-            leading: const Icon(Icons.feedback_outlined),
-            title: const Text('问题反馈'),
             trailing: Icon(Icons.arrow_forward, size: 16, color: outline),
           ),
           ListTile(
