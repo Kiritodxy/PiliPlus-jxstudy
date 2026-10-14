@@ -7,8 +7,6 @@ import 'package:PiliPlus/http/reply.dart';
 import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_mention/item.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
-import 'package:PiliPlus/pages/common/publish/publish_route.dart';
-import 'package:PiliPlus/pages/video/reply_new/view.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/reply_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -126,84 +124,16 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
     return (inputDisable, hint);
   }
 
+  // 定制版：仅可浏览评论区，禁止发表评论/回复。
+  // 所有写入口（评论面板 FAB「发表评论」、评论项「回复」按钮、二级回复面板）
+  // 最终都汇聚到此处，故在此统一拦截，评论列表仍正常展示可读。
   void onReply(
     ReplyInfo? replyItem, {
     int? oid,
     int? replyType,
     MentionItem? mentionItem,
   }) {
-    if (loadingState.value case Error(:final errMsg, :final code)) {
-      if (errMsg != null && (code == 12061 || code == 12002)) {
-        SmartDialog.showToast(errMsg);
-        return;
-      }
-    }
-
-    assert(replyItem != null || (oid != null && replyType != null));
-
-    final (bool inputDisable, String? hint) = replyHint;
-    if (inputDisable) {
-      return;
-    }
-
-    final key = oid ?? replyItem!.oid + replyItem.id;
-    Get.key.currentState!
-        .push(
-          PublishRoute(
-            pageBuilder: (buildContext, animation, secondaryAnimation) {
-              return ReplyPage(
-                hint: hint,
-                oid: oid ?? replyItem!.oid.toInt(),
-                root: oid != null ? 0 : replyItem!.id.toInt(),
-                parent: oid != null ? 0 : replyItem!.id.toInt(),
-                replyType: replyItem?.type.toInt() ?? replyType!,
-                replyItem: replyItem,
-                mentionItem: mentionItem,
-                items: savedReplies[key],
-
-                /// hd api deprecated
-                // canUploadPic: canUploadPic,
-                onSave: (reply) {
-                  if (reply.isEmpty) {
-                    savedReplies.remove(key);
-                  } else {
-                    savedReplies[key] = reply.toList();
-                  }
-                },
-              );
-            },
-            settings: RouteSettings(arguments: Get.arguments),
-          ),
-        )
-        .then(
-          (replyInfo) {
-            if (replyInfo is ReplyInfo) {
-              savedReplies.remove(key);
-              if (loadingState.value case Success(:final response)) {
-                if (response == null) {
-                  loadingState.value = Success([replyInfo]);
-                } else {
-                  if (oid != null) {
-                    response.insert(hasUpTop ? 1 : 0, replyInfo);
-                  } else {
-                    replyItem!
-                      ..count += 1
-                      ..replies.add(replyInfo);
-                  }
-                  loadingState.refresh();
-                }
-              } else {
-                loadingState.value = Success([replyInfo]);
-              }
-              count.value += 1;
-
-              // check reply
-              if (enableCommAntifraud) {
-                onCheckReply(replyInfo, isManual: false);
-              }
-            }
-          },
-        );
+    SmartDialog.showToast('本定制版仅支持查看评论，不能发表评论');
   }
 
   void onRemove(int index, ReplyInfo item, int? subIndex) {

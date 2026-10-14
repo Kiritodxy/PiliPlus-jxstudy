@@ -116,16 +116,16 @@ List<SettingsModel> get extraSettings => [
   ),
   // 定制版：「学习白名单」已移到设置主页一级入口
   const SwitchModel(
-    title: '显示视频评论（定制版：默认关闭）',
+    title: '显示视频评论（定制版：仅可查看，不能发表/回复）',
     leading: Icon(MdiIcons.commentTextOutline),
     setKey: SettingBoxKey.showVideoReply,
-    defaultVal: false,
+    defaultVal: true,
   ),
   const SwitchModel(
-    title: '显示番剧评论（定制版：默认关闭）',
+    title: '显示番剧评论（定制版：仅可查看，不能发表/回复）',
     leading: Icon(MdiIcons.commentTextOutline),
     setKey: SettingBoxKey.showBangumiReply,
-    defaultVal: false,
+    defaultVal: true,
   ),
   const SwitchModel(
     title: '默认展开视频简介',

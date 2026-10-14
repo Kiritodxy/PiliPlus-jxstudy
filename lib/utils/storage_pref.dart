@@ -379,13 +379,13 @@ abstract final class Pref {
   static bool get showRelatedVideo =>
       _setting.get(SettingBoxKey.showRelatedVideo, defaultValue: true);
 
-  // 定制版：默认不显示视频评论
+  // 定制版：默认显示视频评论（仅可查看，禁止发表）
   static bool get showVideoReply =>
-      _setting.get(SettingBoxKey.showVideoReply, defaultValue: false);
+      _setting.get(SettingBoxKey.showVideoReply, defaultValue: true);
 
-  // 定制版：默认不显示番剧评论
+  // 定制版：默认显示番剧评论（仅可查看，禁止发表）
   static bool get showBangumiReply =>
-      _setting.get(SettingBoxKey.showBangumiReply, defaultValue: false);
+      _setting.get(SettingBoxKey.showBangumiReply, defaultValue: true);
 
   static bool get alwaysExpandIntroPanel =>
       _setting.get(SettingBoxKey.alwaysExpandIntroPanel, defaultValue: false);

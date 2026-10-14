@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
+import 'package:PiliPlus/common/widgets/particle_background.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/models/common/setting_type.dart';
@@ -76,10 +77,12 @@ class _SettingPageState extends State<SettingPage> {
       appBar: AppBar(
         title: _isPortrait ? const Text('设置') : Text(_type.title),
       ),
-      body: ViewSafeArea(
-        child: _isPortrait
-            ? _buildList(theme)
-            : Row(
+      // 定制版：设置页也叠加动态粒子背景
+      body: ParticleBackgroundLayer(
+        child: ViewSafeArea(
+          child: _isPortrait
+              ? _buildList(theme)
+              : Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
@@ -102,6 +105,7 @@ class _SettingPageState extends State<SettingPage> {
                   ),
                 ],
               ),
+        ),
       ),
     );
   }
