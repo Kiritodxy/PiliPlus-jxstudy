@@ -19,7 +19,6 @@ import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -337,28 +336,6 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
       ? const ActionBarLocation()
       : const NoBottomPaddingFabLocation();
 
-  Widget get fabButton => Padding(
-    padding: .only(
-      right: kFloatingActionButtonMargin + padding.right,
-      bottom: kFloatingActionButtonMargin + padding.bottom,
-    ),
-    child: replyButton,
-  );
-
-  Widget get replyButton => FloatingActionButton(
-    heroTag: null,
-    onPressed: () {
-      try {
-        feedBack();
-        controller.onReply(
-          null,
-          oid: controller.oid,
-          replyType: controller.replyType,
-          mentionItem: controller.mentionItem,
-        );
-      } catch (_) {}
-    },
-    tooltip: '评论',
-    child: const Icon(Icons.reply),
-  );
+// 定制版：评论区只读，隐藏「发表评论」FAB（返回空占位，调用方零改动）
+  Widget get fabButton => const SizedBox.shrink();
 }
