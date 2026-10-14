@@ -93,6 +93,43 @@ jobs:
                   path: dist/*.apk
                   if-no-files-found: error
 
+            # 定制版：自动生成含「本次改动清单」的正文，避免每次弹窗内容一成不变
+            - name: 生成 Release 正文（含本次改动清单）
+              if: ${{ github.event.inputs.tag != '' || startsWith(github.ref, 'refs/tags/v') }}
+              run: |
+                  TAG="${{ github.event.inputs.tag || github.ref_name }}"
+                  PREV_TAG=$(git tag --sort=-creatordate | grep -vx "$TAG" | head -1)
+                  {
+                    echo "## PiliPlus 江西学习守护版 $TAG"
+                    echo ""
+                    echo "基于 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus) 的定制安卓客户端，"
+                    echo "面向**江西新高考（3+1+2）物化生选科**的学生使用。"
+                    echo ""
+                    echo "### 本次改动"
+                    if [ -n "$PREV_TAG" ]; then
+                      git log "$PREV_TAG..HEAD" --pretty=format:"- %s" --no-merges
+                    else
+                      echo "- 首个版本"
+                    fi
+                    echo ""
+                    echo ""
+                    echo "### 本次构建"
+                    echo "- 学习白名单：621 条关键词（江西用卷口径：语数外新课标Ⅰ卷 + 理化生江西卷）"
+                    echo "- 内置白名单在首次安装后即刻生效，清除 App 数据也不会丢失"
+                    echo "- **仅提供 arm64-v8a 版本**（适配主流 64 位 ARM 机型，安装包更小）"
+                    echo ""
+                    echo "### 安装说明"
+                    echo "下载 \`PiliPlus_${TAG}.apk\` 直接安装即可。"
+                    echo "此包仅支持 64 位 ARM 设备（2017 年后绝大多数安卓手机），"
+                    echo "x86_64 模拟器与老旧 32 位机型不适用。"
+                    echo ""
+                    echo "### 已声明的边界"
+                    echo "- APK 未配置正式签名时使用 debug 签名，安装时若提示风险属正常现象"
+                    echo "- 白名单采用「包含匹配」：搜索词中只要出现词库条目即放行"
+                  } > RELEASE_BODY.md
+                  echo "----- RELEASE_BODY.md -----"
+                  cat RELEASE_BODY.md
+
             - name: 发布 Release（仅在填写 tag 或推送 v* 标签时）
               if: ${{ github.event.inputs.tag != '' || startsWith(github.ref, 'refs/tags/v') }}
               uses: softprops/action-gh-release@v2
@@ -100,23 +137,4 @@ jobs:
                   tag_name: ${{ github.event.inputs.tag || github.ref_name }}
                   name: ${{ github.event.inputs.tag || github.ref_name }}
                   files: dist/*.apk
-                  generate_release_notes: true
-                  body: |
-                      ## PiliPlus 江西学习守护版 ${{ github.event.inputs.tag || github.ref_name }}
-
-                      基于 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus) 的定制安卓客户端，
-                      面向**江西新高考（3+1+2）物化生选科**的学生使用。
-
-                      ### 本次构建
-                      - 学习白名单：621 条关键词（江西用卷口径：语数外新课标Ⅰ卷 + 理化生江西卷）
-                      - 内置白名单在首次安装后即刻生效，清除 App 数据也不会丢失
-                      - **仅提供 arm64-v8a 版本**（适配主流 64 位 ARM 机型，安装包更小）
-
-                      ### 安装说明
-                      下载 `PiliPlus_${{ github.event.inputs.tag || github.ref_name }}.apk` 直接安装即可。
-                      此包仅支持 64 位 ARM 设备（2017 年后绝大多数安卓手机），
-                      x86_64 模拟器与老旧 32 位机型不适用。
-
-                      ### 已声明的边界
-                      - APK 未配置正式签名时使用 debug 签名，安装时若提示风险属正常现象
-                      - 白名单采用「包含匹配」：搜索词中只要出现词库条目即放行
+                  body_path: RELEASE_BODY.md
