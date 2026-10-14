@@ -16,6 +16,25 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:material_ui/material_ui.dart';
 
 abstract final class Update {
+  // 定制版：GitHub 下载加速镜像前缀（把 https://github.com/... 套在前缀之后即可加速）。
+  // 站点参考 https://www.moretools.app/zh-CN/github-proxy ；镜像仅反代公开仓库下载，无鉴权问题。
+  // 若主镜像失效，可在此调整/增补（按顺序取第一个可用者）。
+  static const List<String> _ghMirrors = [
+    'https://gh-proxy.net/',
+    'https://github.cnxiaobai.com/',
+    'https://hub.gitmirror.com/',
+  ];
+
+  // 定制版：把 GitHub 下载链接转换为加速镜像链接；非 GitHub 链接原样返回
+  static String _accelerate(String url) {
+    if (url.isEmpty) return url;
+    if (url.startsWith('https://github.com/') ||
+        url.startsWith('http://github.com/')) {
+      return '${_ghMirrors.first}$url';
+    }
+    return url;
+  }
+
   // 检查更新
   static Future<void> checkUpdate([bool isAuto = true]) async {
     if (kDebugMode) return;
@@ -114,7 +133,7 @@ abstract final class Update {
                   downloadBtn('deb', ext: 'deb'),
                   downloadBtn('targz', ext: 'tar.gz'),
                 ] else
-                  downloadBtn('Github'),
+                  downloadBtn('下载'),
               ],
             );
           },
@@ -135,7 +154,8 @@ abstract final class Update {
             final String name = i['name'];
             if (name.contains(plat) &&
                 (ext == null || ext.isEmpty ? true : name.endsWith(ext))) {
-              PageUtils.launchURL(i['browser_download_url']);
+              // 定制版：GitHub 直连下载慢，改走加速镜像
+              PageUtils.launchURL(_accelerate(i['browser_download_url']));
               return;
             }
           }
@@ -153,7 +173,9 @@ abstract final class Update {
       }
     } catch (e) {
       if (kDebugMode) debugPrint('download error: $e');
-      PageUtils.launchURL('${Constants.sourceCodeUrl}/releases/latest');
+      PageUtils.launchURL(
+        _accelerate('${Constants.sourceCodeUrl}/releases/latest'),
+      );
     }
   }
 }
