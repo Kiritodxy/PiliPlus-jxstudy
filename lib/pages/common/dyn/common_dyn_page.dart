@@ -338,4 +338,5 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
 
 // 定制版：评论区只读，隐藏「发表评论」FAB（返回空占位，调用方零改动）
   Widget get fabButton => const SizedBox.shrink();
+  Widget get replyButton => const SizedBox.shrink();
 }
