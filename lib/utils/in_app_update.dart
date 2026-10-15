@@ -116,7 +116,7 @@ abstract final class InAppUpdate {
             filePath,
             cancelToken: cancelToken,
             onReceiveProgress: (count, total) {
-              final v = total > 0 ? count / total : -1;
+              final double v = total > 0 ? count / total : -1.0;
               progress.value = v;
               if (v >= 0) {
                 status.value =

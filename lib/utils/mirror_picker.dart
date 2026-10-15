@@ -190,7 +190,7 @@ abstract final class MirrorPicker {
       }),
     );
     final ordered = List<String>.from(speedList)
-      ..sort((a, b) => (scored[b] ?? -1).compareTo(scored[a] ?? -1));
+      ..sort((a, b) => (scored[b] ?? -1.0).compareTo(scored[a] ?? -1.0));
     // 探活通过但未参与测速的，排在最后
     ordered.addAll(alive.skip(_speedLimit));
 
