@@ -187,8 +187,24 @@ abstract final class Update {
       if (Platform.isAndroid) {
         // 获取设备信息
         AndroidDeviceInfo androidInfo = await DeviceInfoPlugin().androidInfo;
-        // [arm64-v8a]
-        download(androidInfo.supportedAbis.first);
+        // 定制版：按设备支持的 ABI 依次匹配资产。
+        // 本项目资产命名为 PiliPlus_<tag>.apk（tag 里是 arm64，而非 arm64-v8a），
+        // 必须回退到「ABI 短名」匹配，否则永远匹配不到、只能退回跳浏览器。
+        for (final abi in androidInfo.supportedAbis) {
+          final short = abi.split('-').first;
+          if (short.length < 4) continue;
+          for (final item in data['assets'] as List) {
+            final Map map = item as Map;
+            final String name = '${map['name']}';
+            if ((name.contains(abi) || name.contains(short)) &&
+                (ext == null || ext.isEmpty ? true : name.endsWith(ext))) {
+              androidUrl = '${map['browser_download_url']}';
+              androidName = name;
+              break;
+            }
+          }
+          if (androidUrl != null) break;
+        }
         if (androidUrl != null) {
           // 镜像在前、GitHub 原始地址兜底；依次重试
           await InAppUpdate.downloadAndInstall(
@@ -197,6 +213,11 @@ abstract final class Update {
               androidUrl!,
             ],
             fileName: androidName ?? 'PiliPlus_update.apk',
+          );
+        } else {
+          // 未匹配到本机 ABI 的资产：退回仓库 latest 页
+          PageUtils.launchURL(
+            _accelerate('${Constants.sourceCodeUrl}/releases/latest'),
           );
         }
       } else {

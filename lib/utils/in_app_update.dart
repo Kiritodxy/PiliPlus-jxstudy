@@ -102,6 +102,11 @@ abstract final class InAppUpdate {
               progress.value = total > 0 ? count / total : -1;
             },
           );
+          // 镜像异常时可能返回 HTML 错误页，只有真正拿到 zip(APK) 才算成功
+          if (!_looksLikeApk(file)) {
+            lastError = '返回内容不是 APK（可能镜像异常）';
+            continue;
+          }
           ok = true;
           break;
         } on DioException catch (e) {
@@ -111,7 +116,7 @@ abstract final class InAppUpdate {
       }
 
       SmartDialog.dismiss();
-      progress.dispose();
+      // 注：不 dispose progress —— 弹窗退场动画期间仍可能重建，提前销毁会抛异常
 
       if (!ok) {
         SmartDialog.showToast('下载失败：${lastError ?? '无可用下载地址'}');
@@ -127,6 +132,27 @@ abstract final class InAppUpdate {
       if (e is! DioException || !CancelToken.isCancel(e)) {
         SmartDialog.showToast('下载失败：$e');
       }
+    }
+  }
+
+  /// 校验下载结果确实是 APK：zip 魔数 `PK\x03\x04`。
+  /// 部分加速镜像失败时会返回 HTML 错误页且仍是 200，若不校验会把错误页当安装包。
+  static bool _looksLikeApk(File file) {
+    try {
+      if (!file.existsSync() || file.lengthSync() < 4) return false;
+      final raf = file.openSync();
+      try {
+        final head = raf.readSync(4);
+        return head.length == 4 &&
+            head[0] == 0x50 &&
+            head[1] == 0x4B &&
+            head[2] == 0x03 &&
+            head[3] == 0x04;
+      } finally {
+        raf.closeSync();
+      }
+    } catch (_) {
+      return false;
     }
   }
 
