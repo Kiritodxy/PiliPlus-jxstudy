@@ -83,7 +83,9 @@ jobs:
             - name: 重命名产物
               run: |
                   mkdir -p dist
-                  cp build/app/outputs/flutter-apk/app-release.apk "dist/PiliPlus_${{ github.event.inputs.tag || github.ref_name }}.apk"
+                  # 定制版：资产名必须含 arm64-v8a —— 应用内更新的 ABI 匹配依赖它
+                  # （老版本用 name.contains('arm64-v8a') 匹配，写成纯 tag 会匹配不到而退回浏览器）
+                  cp build/app/outputs/flutter-apk/app-release.apk "dist/PiliPlus_${{ github.event.inputs.tag || github.ref_name }}-arm64-v8a.apk"
                   ls -lh dist/
 
             - name: 上传构建产物（Artifact）
@@ -119,7 +121,7 @@ jobs:
                     echo "- **仅提供 arm64-v8a 版本**（适配主流 64 位 ARM 机型，安装包更小）"
                     echo ""
                     echo "### 安装说明"
-                    echo "下载 \`PiliPlus_${TAG}.apk\` 直接安装即可。"
+                    echo "下载 \`PiliPlus_${TAG}-arm64-v8a.apk\` 直接安装即可。"
                     echo "此包仅支持 64 位 ARM 设备（2017 年后绝大多数安卓手机），"
                     echo "x86_64 模拟器与老旧 32 位机型不适用。"
                     echo ""

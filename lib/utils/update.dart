@@ -21,7 +21,9 @@ abstract final class Update {
   // 站点参考 https://www.moretools.app/zh-CN/github-proxy ；镜像仅反代公开仓库下载，无鉴权问题。
   // 若主镜像失效，可在此调整/增补（按顺序取第一个可用者）。
   static const List<String> _ghMirrors = [
-    'https://gh-proxy.net/',
+    'https://ghproxy.net/',
+    'https://ghfast.top/',
+    'https://gh.llkk.cc/',
     'https://github.cnxiaobai.com/',
     'https://hub.gitmirror.com/',
   ];
