@@ -17,23 +17,18 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:material_ui/material_ui.dart';
 
 abstract final class Update {
-  // 定制版：GitHub 下载加速镜像前缀（把 https://github.com/... 套在前缀之后即可加速）。
-  // 站点参考 https://www.moretools.app/zh-CN/github-proxy ；镜像仅反代公开仓库下载，无鉴权问题。
-  // 若主镜像失效，可在此调整/增补（按顺序取第一个可用者）。
-  static const List<String> _ghMirrors = [
-    'https://ghproxy.net/',
-    'https://ghfast.top/',
-    'https://gh.llkk.cc/',
-    'https://github.cnxiaobai.com/',
-    'https://hub.gitmirror.com/',
-  ];
+  // 定制版：GitHub 下载加速镜像不再写死单一列表。
+  // 镜像存活周期很短（实测 gh-proxy.net 曾为首选，后返回 401 永久失效），
+  // 因此改为运行时「抓清单 → 探活 → 实测速度 → 择优」，见 MirrorPicker。
+  // 兜底链接（用于无法测速的场景，例如列表页也拿不到）：
+  static const String _fallbackMirror = 'https://ghproxy.net/';
 
   // 定制版：把 GitHub 下载链接转换为加速镜像链接；非 GitHub 链接原样返回
   static String _accelerate(String url) {
     if (url.isEmpty) return url;
     if (url.startsWith('https://github.com/') ||
         url.startsWith('http://github.com/')) {
-      return '${_ghMirrors.first}$url';
+      return '$_fallbackMirror$url';
     }
     return url;
   }
@@ -208,12 +203,9 @@ abstract final class Update {
           if (androidUrl != null) break;
         }
         if (androidUrl != null) {
-          // 镜像在前、GitHub 原始地址兜底；依次重试
+          // 定制版：先测速择优，再用最快镜像下载；失败自动顺延到下一个
           await InAppUpdate.downloadAndInstall(
-            urls: [
-              for (final m in _ghMirrors) '$m$androidUrl',
-              androidUrl!,
-            ],
+            targetUrl: androidUrl!,
             fileName: androidName ?? 'PiliPlus_update.apk',
           );
         } else {
