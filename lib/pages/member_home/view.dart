@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/more_btn.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
@@ -8,6 +6,10 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart'
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/space/space/data.dart';
 import 'package:PiliPlus/models_new/space/space/tab2.dart';
+import 'package:PiliPlus/models_new/space/space_archive/item.dart';
+import 'package:PiliPlus/models_new/space/space_article/item.dart';
+import 'package:PiliPlus/models_new/space/space_audio/item.dart';
+import 'package:PiliPlus/models_new/space/space_fav/list.dart';
 import 'package:PiliPlus/pages/member/controller.dart';
 import 'package:PiliPlus/pages/member_article/widget/item.dart';
 import 'package:PiliPlus/pages/member_audio/widgets/item.dart';
@@ -43,18 +45,22 @@ class MemberHome extends StatefulWidget {
 }
 
 class _MemberHomeState extends State<MemberHome>
-    with AutomaticKeepAliveClientMixin, GridMixin {
+    with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 
+  late final setting = _ctr.spaceSetting;
+  late final isOwner = setting != null;
   late final _ctr = Get.find<MemberController>(tag: widget.heroTag);
 
+  late bool isVertical;
   late ColorScheme colorScheme;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     colorScheme = ColorScheme.of(context);
+    isVertical = MediaQuery.widthOf(context) < 600;
   }
 
   @override
@@ -63,7 +69,7 @@ class _MemberHomeState extends State<MemberHome>
     return _buildBody(_ctr.loadingState.value);
   }
 
-  late final gridDelegateV = SliverGridDelegateWithExtentAndRatio(
+  late final gridDelegateV = OpusGridDelegate(
     mainAxisSpacing: Style.cardSpace,
     crossAxisSpacing: Style.cardSpace,
     maxCrossAxisExtent: Grid.smallCardWidth,
@@ -71,7 +77,11 @@ class _MemberHomeState extends State<MemberHome>
     mainAxisExtent: MediaQuery.textScalerOf(context).scale(55),
   );
 
-  late final gridDelegateAudio = Grid.videoCardHDelegate();
+  late final gridDelegateH = OpusGridDelegateFixedMainAxisExtent(
+    mainAxisSpacing: 2,
+    mainAxisExtent: 110,
+    maxCrossAxisExtent: Grid.smallCardWidth * 2,
+  );
 
 
   Widget _buildBody(LoadingState<SpaceData?> loadingState) {
@@ -252,11 +262,12 @@ class _MemberHomeState extends State<MemberHome>
     required int count,
     bool? visible,
   }) {
+    final outline = colorScheme.outline;
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const .symmetric(horizontal: 16, vertical: 12),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: .spaceBetween,
           children: [
             Text.rich(
               TextSpan(
@@ -264,17 +275,17 @@ class _MemberHomeState extends State<MemberHome>
                   TextSpan(text: '$title '),
                   TextSpan(
                     text: count.toString(),
-                    style: TextStyle(fontSize: 13, color: color),
+                    style: TextStyle(fontSize: 13, color: outline),
                   ),
                   if (visible != null)
                     WidgetSpan(
-                      alignment: PlaceholderAlignment.middle,
+                      alignment: .middle,
                       child: Padding(
-                        padding: const EdgeInsets.only(left: 10),
+                        padding: const .only(left: 10),
                         child: Icon(
                           visible ? Icons.visibility : Icons.visibility_off,
                           size: 17,
-                          color: color,
+                          color: outline,
                         ),
                       ),
                     ),
@@ -341,9 +352,195 @@ class _MemberHomeState extends State<MemberHome>
                   SmartDialog.showToast('view $param');
                 }
               },
-              color: color,
+              color: outline,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Iterable<Widget> _buildArchive(
+    int count,
+    List<SpaceArchiveItem> archives,
+  ) sync* {
+    yield _header(
+      title: '视频',
+      param: 'contribute',
+      param1: 'video',
+      count: count,
+    );
+    yield SliverToBoxAdapter(
+      child: Padding(
+        padding: const .symmetric(horizontal: Style.safeSpace),
+        child: OpusGridBuilder(
+          childCount: archives.length,
+          gridDelegate: gridDelegateV,
+          builder: (context, opusGridInfo) => archives
+              .take(
+                isVertical
+                    ? opusGridInfo.crossAxisCount * 2
+                    : opusGridInfo.crossAxisCount,
+              )
+              .map(VideoCardVMemberHome.new)
+              .toList(),
+        ),
+      ),
+    );
+  }
+
+  Iterable<Widget> _buildFavourite(
+    int count,
+    List<SpaceFavItemModel> favourites,
+  ) sync* {
+    yield _header(
+      title: '收藏',
+      param: 'favorite',
+      count: count,
+      visible: isOwner ? setting!.favVideo == 1 : null,
+    );
+    yield SliverToBoxAdapter(
+      child: OpusGridBuilder(
+        gridDelegate: gridDelegateH,
+        childCount: favourites.length,
+        builder: (context, opusGridInfo) => favourites
+            .take(opusGridInfo.crossAxisCount)
+            .map(MemberFavItem.new)
+            .toList(),
+      ),
+    );
+  }
+
+  Iterable<Widget> _buildCoinArchive(
+    int count,
+    List<SpaceArchiveItem> coinArchives,
+  ) sync* {
+    yield _header(
+      title: '最近投币的视频',
+      param: 'coinArchive',
+      count: count,
+      visible: isOwner ? setting!.coinsVideo == 1 : null,
+    );
+    yield SliverToBoxAdapter(
+      child: Padding(
+        padding: const .symmetric(horizontal: Style.safeSpace),
+        child: OpusGridBuilder(
+          gridDelegate: gridDelegateV,
+          childCount: coinArchives.length,
+          builder: (context, opusGridInfo) => coinArchives
+              .take(opusGridInfo.crossAxisCount)
+              .map(VideoCardVMemberHome.new)
+              .toList(),
+        ),
+      ),
+    );
+  }
+
+  Iterable<Widget> _buildLikeArchive(
+    int count,
+    List<SpaceArchiveItem> likeArchives,
+  ) sync* {
+    yield _header(
+      title: '最近点赞的视频',
+      param: 'likeArchive',
+      count: count,
+      visible: isOwner ? setting!.likesVideo == 1 : null,
+    );
+    yield SliverToBoxAdapter(
+      child: Padding(
+        padding: const .symmetric(horizontal: Style.safeSpace),
+        child: OpusGridBuilder(
+          gridDelegate: gridDelegateV,
+          childCount: likeArchives.length,
+          builder: (context, opusGridInfo) => likeArchives
+              .take(opusGridInfo.crossAxisCount)
+              .map(VideoCardVMemberHome.new)
+              .toList(),
+        ),
+      ),
+    );
+  }
+
+  Iterable<Widget> _buildArticle(
+    int count,
+    List<SpaceArticleItem> articles,
+  ) sync* {
+    yield _header(
+      title: '图文',
+      param: 'contribute',
+      param1: 'opus',
+      count: count,
+    );
+    yield SliverToBoxAdapter(
+      child: OpusGridBuilder(
+        gridDelegate: gridDelegateH,
+        childCount: articles.length,
+        builder: (context, opusGridInfo) => articles
+            .take(opusGridInfo.crossAxisCount)
+            .map(MemberArticleItem.new)
+            .toList(),
+      ),
+    );
+  }
+
+  Iterable<Widget> _buildAudio(int count, List<SpaceAudioItem> audios) sync* {
+    yield _header(
+      title: '音频',
+      param: 'contribute',
+      param1: 'audio',
+      count: count,
+    );
+    yield SliverToBoxAdapter(
+      child: OpusGridBuilder(
+        gridDelegate: gridDelegateH,
+        childCount: audios.length,
+        builder: (context, opusGridInfo) => audios
+            .take(opusGridInfo.crossAxisCount)
+            .map(MemberAudioItem.new)
+            .toList(),
+      ),
+    );
+  }
+
+  Iterable<Widget> _buildComic(int count, List<SpaceArchiveItem> comics) sync* {
+    yield _header(
+      title: '漫画',
+      param: 'contribute',
+      param1: 'comic',
+      count: count,
+    );
+    yield SliverToBoxAdapter(
+      child: OpusGridBuilder(
+        gridDelegate: gridDelegateH,
+        childCount: comics.length,
+        builder: (context, opusGridInfo) => comics
+            .take(opusGridInfo.crossAxisCount)
+            .map(MemberComicItem.new)
+            .toList(),
+      ),
+    );
+  }
+
+  Iterable<Widget> _buildSeason(
+    int count,
+    List<SpaceArchiveItem> seasons,
+  ) sync* {
+    yield _header(
+      title: '追番',
+      param: 'bangumi',
+      count: count,
+      visible: isOwner ? setting!.bangumi == 1 : null,
+    );
+    yield SliverToBoxAdapter(
+      child: Padding(
+        padding: const .symmetric(horizontal: Style.safeSpace),
+        child: OpusGridBuilder(
+          gridDelegate: gridDelegatePgc,
+          childCount: seasons.length,
+          builder: (context, opusGridInfo) => seasons
+              .take(opusGridInfo.crossAxisCount)
+              .map(PgcCardVMemberPgc.new)
+              .toList(),
         ),
       ),
     );

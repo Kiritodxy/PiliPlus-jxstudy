@@ -259,6 +259,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- 定制版：应用内下载更新并直接唤起安装器（Android 8.0+ 未知来源授权由系统弹窗引导） -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
