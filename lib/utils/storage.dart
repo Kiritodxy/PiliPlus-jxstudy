@@ -22,6 +22,8 @@ abstract final class GStorage {
   static late final Box<dynamic> setting;
   static late final Box<dynamic> video;
   static late final Box<int> watchProgress;
+  // 定制版：本地累计观看时长（cid → {total,last,sessions}），与 watchProgress 的"上次位置"不同
+  static late final Box<dynamic> watchTime;
   static late final Box<Uint8List>? reply;
 
   static Future<void> init() async {
@@ -62,6 +64,14 @@ abstract final class GStorage {
           return deletedEntries > 4;
         },
       ).then((res) => watchProgress = res),
+      // 定制版：本地累计观看时长统计
+      Hive.openBox<dynamic>(
+        'watchTime',
+        keyComparator: _intStrDescKeyComparator,
+        compactionStrategy: (entries, deletedEntries) {
+          return deletedEntries > 4;
+        },
+      ).then((res) => watchTime = res),
     ]);
 
     if (Pref.saveReply) {
@@ -117,6 +127,8 @@ abstract final class GStorage {
       video.compact(),
       Accounts.account.compact(),
       watchProgress.compact(),
+      // 定制版：累计观看时长 box
+      watchTime.compact(),
       ?reply?.compact(),
     ]);
   }

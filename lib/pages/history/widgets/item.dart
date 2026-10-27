@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/select_mask.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/models_new/history/list.dart';
+import 'package:PiliPlus/models_new/history/watch_time.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
@@ -239,24 +240,38 @@ class HistoryItem extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           const Spacer(),
-          // 定制版：显示实际观看时长
-          if (hasDuration)
-            Builder(builder: (context) {
-              final watched = item.progress == -1
-                  ? DurationUtils.formatDuration(item.duration)
-                  : DurationUtils.formatDuration(item.progress);
-              final label = item.progress == -1
-                  ? '已看完 · 全长 $watched'
-                  : '实际观看 $watched / ${DurationUtils.formatDuration(item.duration)}';
-              return Text(
-                label,
-                style: TextStyle(
-                  fontSize: theme.textTheme.labelMedium!.fontSize,
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.w500,
-                ),
-              );
-            }),
+          // 定制版：显示本地累计的「真实观看时长」
+            // 与 B 站返回的 progress（上次播放位置）区分：这里只统计本 App 内的真实播放
+            if (hasDuration)
+              Builder(builder: (context) {
+                final cid = item.history.cid;
+                final localMs = cid != null ? WatchTime.totalMs(cid) : 0;
+                if (localMs > 0) {
+                  final watched = DurationUtils.formatDuration(localMs ~/ 1000);
+                  final total = DurationUtils.formatDuration(item.duration);
+                  return Text(
+                    '实际观看 $watched / $total',
+                    style: TextStyle(
+                      fontSize: theme.textTheme.labelMedium!.fontSize,
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  );
+                }
+                // 本地无统计（未在本 App 看过）：显示 B 站的上次播放位置
+                final watched = item.progress == -1
+                    ? DurationUtils.formatDuration(item.duration)
+                    : DurationUtils.formatDuration(item.progress);
+                return Text(
+                  item.progress == -1
+                      ? '已看完 · 全长 $watched'
+                      : '上次看到 $watched / ${DurationUtils.formatDuration(item.duration)}',
+                  style: TextStyle(
+                    fontSize: theme.textTheme.labelMedium!.fontSize,
+                    color: theme.colorScheme.outline,
+                  ),
+                );
+              }),
           if (item.authorName?.isNotEmpty == true)
             Text(
               item.authorName!,

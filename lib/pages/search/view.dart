@@ -46,7 +46,6 @@ class _SearchPageState extends State<SearchPage> {
           child: ViewInsetsSafeArea(
             child: CustomScrollView(
               slivers: [
-                if (_searchController.allowSearchEnabled) _buildWhitelistTip,
                 _buildHistory,
                 SliverPadding(padding: .only(bottom: padding.bottom)),
               ],
@@ -57,32 +56,8 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  /// 白名单搜索开启时的提示（关闭时搜索不受限，不显示）
-  Widget get _buildWhitelistTip => SliverPadding(
-    padding: const .fromLTRB(20, 16, 20, 0),
-    sliver: SliverToBoxAdapter(
-      child: Row(
-        children: [
-          Icon(
-            Icons.school_outlined,
-            size: 18,
-            color: theme.colorScheme.outline,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              '白名单搜索已开启，仅放行学习相关关键词',
-              style: TextStyle(
-                fontSize: 12,
-                color: theme.colorScheme.outline,
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-
+  // 定制版：已移除「白名单搜索已开启，仅放行学习相关关键词」提示
+  // （白名单拦截本身仍生效，只是不再在搜索页显示提示）
   PreferredSizeWidget get _buildAppBar => AppBar(
     shape: Border(
       bottom: BorderSide(
