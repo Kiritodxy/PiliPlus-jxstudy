@@ -7,7 +7,6 @@ import 'package:PiliPlus/build_config.dart';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
-import 'package:PiliPlus/pages/my_reply/view.dart';
 import 'package:PiliPlus/pages/search/controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
@@ -257,9 +256,8 @@ abstract final class ConfigArchive {
   }
 
   static void _importReply(List<dynamic> list) {
-    final box = GStorage.reply;
-    if (box == null) return;
-    box.putAll(MyReply.json2ReplyProto(list));
+    // 定制版：回复草稿模块已移除（MyReply），不再导入
+    return;
   }
 
   static void _importSearch(List<dynamic> list) {

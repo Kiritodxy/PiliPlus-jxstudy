@@ -521,28 +521,5 @@ class _MemberHomeState extends State<MemberHome>
     );
   }
 
-  Iterable<Widget> _buildSeason(
-    int count,
-    List<SpaceArchiveItem> seasons,
-  ) sync* {
-    yield _header(
-      title: '追番',
-      param: 'bangumi',
-      count: count,
-      visible: isOwner ? setting!.bangumi == 1 : null,
-    );
-    yield SliverToBoxAdapter(
-      child: Padding(
-        padding: const .symmetric(horizontal: Style.safeSpace),
-        child: OpusGridBuilder(
-          gridDelegate: gridDelegatePgc,
-          childCount: seasons.length,
-          builder: (context, opusGridInfo) => seasons
-              .take(opusGridInfo.crossAxisCount)
-              .map(PgcCardVMemberPgc.new)
-              .toList(),
-        ),
-      ),
-    );
-  }
+    // 定制版：已移除「追番」段（_buildSeason 依赖番剧卡片 PgcCardVMemberPgc，该模块已删除）
 }

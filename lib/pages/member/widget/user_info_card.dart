@@ -337,19 +337,7 @@ class UserInfoCard extends StatelessWidget {
                 return GestureDetector(
                   onTap: hasMedalName
                       ? () => Utils.copyText(medalName)
-                      : () async {
-                          final res = await LiveHttp.liveMedalName(card.mid!);
-                          if (res case Success(:final response)) {
-                            if (response != null) {
-                              card.medalName = response;
-                              if (context.mounted) {
-                                (context as Element).markNeedsBuild();
-                              }
-                            }
-                          } else {
-                            res.toast();
-                          }
-                        },
+                      : null, // 定制版：粉丝勋章名查询依赖直播接口（已移除），不再联网获取
                   child: Text(
                     '粉丝勋章${hasMedalName ? ': $medalName' : ''}',
                     style: style,
