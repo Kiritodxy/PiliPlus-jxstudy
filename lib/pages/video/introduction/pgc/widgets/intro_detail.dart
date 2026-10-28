@@ -98,7 +98,7 @@ class _IntroDetailState extends State<PgcIntroPanel>
       physics: tabBarScrollPhysics,
       horizontalDragGestureRecognizer: horizontalDragGestureRecognizer,
       children: [
-        KeepAliveWrapper(child: _buildInfo(theme)),
+        KeepAliveWrapper(child: _buildInfo()),
         // 定制版：番剧点评页已移除（该面板本身已无入口，保留以兼容编译）
         const Center(child: Text('番剧功能已停用')),
       ],

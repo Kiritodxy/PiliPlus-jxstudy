@@ -103,19 +103,7 @@ List<SettingsModel> get videoSettings => [
         '当前音质：${AudioQuality.fromCode(Pref.defaultAudioQaCellular).desc}',
     onTap: _showAudioCellularQaDialog,
   ),
-  NormalModel(
-    title: '直播默认画质',
-    leading: const Icon(Icons.video_settings_outlined),
-    getSubtitle: () => '当前画质：${LiveQuality.fromCode(Pref.liveQuality).desc}',
-    onTap: _showLiveQaDialog,
-  ),
-  NormalModel(
-    title: '蜂窝网络直播默认画质',
-    leading: const Icon(Icons.video_settings_outlined),
-    getSubtitle: () =>
-        '当前画质：${LiveQuality.fromCode(Pref.liveQualityCellular).desc}',
-    onTap: _showLiveCellularQaDialog,
-  ),
+  // 定制版：已移除直播模块，直播画质设置项一并删除
   NormalModel(
     title: '首选解码格式',
     leading: const Icon(Icons.movie_creation_outlined),

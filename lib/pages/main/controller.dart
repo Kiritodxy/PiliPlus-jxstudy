@@ -103,18 +103,6 @@ class MainController extends GetxController
       }
     }
 
-    dynamicBadgeMode = Pref.dynamicBadgeMode;
-
-    hasDyn = navigationBars.contains(NavigationBarType.dynamics);
-    if (dynamicBadgeMode != DynamicBadgeMode.hidden) {
-      if (hasDyn && navigationBars[selectedIndex.value] != .dynamics) {
-        if (checkDynamic) {
-          _lastCheckDynamicAt = DateTime.now().millisecondsSinceEpoch;
-        }
-        getUnreadDynamic();
-      }
-    }
-
     hasHome = navigationBars.contains(NavigationBarType.home);
     if (msgBadgeMode != DynamicBadgeMode.hidden) {
       if (hasHome) {
@@ -308,8 +296,6 @@ class MainController extends GetxController
       if (currentNav == NavigationBarType.home) {
         checkDefaultSearch();
         checkUnread();
-      } else if (currentNav == NavigationBarType.dynamics) {
-        setDynCount();
       }
     } else {
       int now = DateTime.now().millisecondsSinceEpoch;
@@ -318,15 +304,13 @@ class MainController extends GetxController
           'topOrRefresh',
           const Duration(milliseconds: 500),
           () => switch (currentNav) {
-            .home => homeController.onRefresh(),
-            .dynamics => null,
+            // 定制版：HomeController 无 onRefresh（首页 tabs 已裁剪），重复点击不做刷新
+            .home => null,
             .mine => null,
           },
         );
       } else {
-        if (currentNav == NavigationBarType.home) {
-          homeController.toTopOrRefresh();
-        }
+        // 定制版：HomeController 无 toTopOrRefresh（首页 tabs 已裁剪）
       }
       _lastSelectTime = now;
     }
@@ -351,12 +335,8 @@ class MainController extends GetxController
   }
 
   bool refreshRecommendations() {
-    if (navigationBars[selectedIndex.value] == NavigationBarType.home &&
-        homeController.tabs[homeController.tabController.index] ==
-            HomeTabType.rcmd) {
-      homeController.onRefresh();
-      return true;
-    }
+    // 定制版：首页 tabs（推荐/热门/排行…）已裁剪，无 HomeTabType 切换，
+    // 因此这里恒返回 false，跳过"刷新推荐流"逻辑。
     return false;
   }
 

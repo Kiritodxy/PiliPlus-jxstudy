@@ -23,13 +23,7 @@ List<SettingsModel> get recommendSettings => [
     setKey: SettingBoxKey.enableSaveLastData,
     defaultVal: true,
     onChanged: (value) {
-      try {
-        Get.find<RcmdController>()
-          ..enableSaveLastData = value
-          ..lastRefreshAt = null;
-      } catch (e) {
-        if (kDebugMode) debugPrint('$e');
-      }
+      // 定制版：首页推荐页签已移除（RcmdController 不存在），仅写入存储
     },
   ),
   SwitchModel(
@@ -39,13 +33,7 @@ List<SettingsModel> get recommendSettings => [
     setKey: SettingBoxKey.savedRcmdTip,
     defaultVal: true,
     onChanged: (value) {
-      try {
-        Get.find<RcmdController>()
-          ..savedRcmdTip = value
-          ..lastRefreshAt = null;
-      } catch (e) {
-        if (kDebugMode) debugPrint('$e');
-      }
+      // 定制版：首页推荐页签已移除（RcmdController 不存在），仅写入存储
     },
   ),
   getVideoFilterSelectModel(
