@@ -9,8 +9,9 @@ import 'package:PiliPlus/pages/setting/models/reply_settings.dart';
 import 'package:PiliPlus/pages/setting/models/style_settings.dart';
 import 'package:PiliPlus/pages/setting/models/video_settings.dart';
 
-// 定制版：已移除 隐私设置 / 推荐流设置 / WebDAV 设置；已恢复「关于」（含自动更新）
 enum SettingType {
+  privacySetting('隐私设置'),
+  recommendSetting('推荐流设置'),
   videoSetting('音视频设置'),
   playSetting('播放器设置'),
   dmSetting('弹幕设置'),
@@ -18,11 +19,16 @@ enum SettingType {
   dynSetting('动态设置'),
   styleSetting('外观设置'),
   extraSetting('其它设置'),
+  webdavSetting('WebDAV 设置'),
   about('关于'),
   ;
+
   final String title;
   const SettingType(this.title);
+
   List<SettingsModel> get settings => switch (this) {
+    .privacySetting => privacySettings,
+    .recommendSetting => recommendSettings,
     .videoSetting => videoSettings,
     .playSetting => playSettings,
     .dmSetting => dmSettings,

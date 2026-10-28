@@ -4,10 +4,8 @@ import 'package:PiliPlus/grpc/reply.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_mention/item.dart';
-import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/common/reply/fold/reply_fold_mixin.dart';
 import 'package:PiliPlus/pages/common/reply/reply_controller.dart';
-import 'package:PiliPlus/pages/video/reply_new/view.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
@@ -160,11 +158,5 @@ class VideoReplyReplyController extends ReplyController
   }) {
     // 定制版：仅可浏览评论区，禁止发表评论/回复（二级回复面板入口在此拦截）
     SmartDialog.showToast('本定制版仅支持查看评论，不能发表评论');
-  }
-  @override
-  void onClose() {
-    _controller?.dispose();
-    _controller = null;
-    super.onClose();
   }
 }

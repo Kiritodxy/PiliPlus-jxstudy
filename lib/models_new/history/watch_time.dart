@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:PiliPlus/utils/storage.dart';
 import 'package:hive_ce/hive.dart';
 
 /// 定制版：单个视频的本地真实观看时长统计（毫秒）。
@@ -7,7 +8,11 @@ import 'package:hive_ce/hive.dart';
 /// 与 `GStorage.watchProgress`（记录"上次播放到哪"）不同，这里是**累计观看时长**：
 /// 只在播放器真正 playing 时累加，暂停/卡顿/seek 不计入。
 class WatchTime {
-  const WatchTime({required this.totalMs, required this.lastAt, this.sessions = 0});
+  const WatchTime({
+    required this.totalMs,
+    required this.lastAt,
+    this.sessions = 0,
+  });
 
   /// 累计观看时长（毫秒）
   final int totalMs;
@@ -71,7 +76,8 @@ class WatchTime {
   }
 
   /// 读取某视频的累计时长（毫秒）
-  static int totalMs(int cid) =>
+  /// 注意：不能命名为 totalMs —— 与实例字段 totalMs 同名会被 Dart 拒绝。
+  static int readTotalMs(int cid) =>
       WatchTime.decode(GStorage.watchTime.get(cid.toString())).totalMs;
 
   /// 清空单个视频

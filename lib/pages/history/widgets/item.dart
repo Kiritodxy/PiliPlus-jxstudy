@@ -245,7 +245,7 @@ class HistoryItem extends StatelessWidget {
             if (hasDuration)
               Builder(builder: (context) {
                 final cid = item.history.cid;
-                final localMs = cid != null ? WatchTime.totalMs(cid) : 0;
+                final localMs = cid != null ? WatchTime.readTotalMs(cid) : 0;
                 if (localMs > 0) {
                   final watched = DurationUtils.formatDuration(localMs ~/ 1000);
                   final total = DurationUtils.formatDuration(item.duration);
