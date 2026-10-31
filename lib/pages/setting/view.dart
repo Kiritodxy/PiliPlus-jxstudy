@@ -5,8 +5,8 @@ import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/login.dart';
 import 'package:PiliPlus/models/common/setting_type.dart';
 import 'package:PiliPlus/pages/about/view.dart';
-import 'package:PiliPlus/pages/login/controller.dart';
 import 'package:PiliPlus/pages/setting/common_setting.dart';
+import 'package:PiliPlus/pages/setting/pages/study_whitelist.dart';
 import 'package:PiliPlus/pages/setting/widgets/multi_select_dialog.dart';
 import 'package:PiliPlus/pages/webdav/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -44,7 +44,8 @@ class _SettingPageState extends State<SettingPage> {
   late bool _isPortrait;
   late ThemeData theme;
 
-  // 定制版：UI 层隐藏 隐私设置 / 推荐流设置 / WebDAV 设置（枚举与依赖保留，保证上游体系完整）
+  // 定制版：UI 层隐藏 隐私设置 / 推荐流设置 / WebDAV 设置 / 弹幕设置 / 评论设置 / 动态设置
+  // （枚举与依赖保留，保证上游体系完整、后续合并不冲突）
   static const List<_SettingsModel> _items = [
     _SettingsModel(
       type: .videoSetting,
@@ -55,21 +56,6 @@ class _SettingPageState extends State<SettingPage> {
       type: .playSetting,
       subtitle: '双击/长按、全屏、后台播放、弹幕、字幕、底部进度条等',
       icon: Icon(Icons.touch_app_outlined),
-    ),
-    _SettingsModel(
-      type: .dmSetting,
-      subtitle: '点击弹幕、弹幕行高、彩色弹幕、合并弹幕',
-      icon: Icon(CustomIcons.dm_settings),
-    ),
-    _SettingsModel(
-      type: .replySetting,
-      subtitle: '过滤、屏蔽、记录、默认展示等',
-      icon: Icon(Icons.comment_outlined),
-    ),
-    _SettingsModel(
-      type: .dynSetting,
-      subtitle: '过滤、屏蔽、默认展示等',
-      icon: Icon(CustomIcons.motion_photos_on_outlined),
     ),
     _SettingsModel(
       type: .styleSetting,
@@ -185,19 +171,16 @@ class _SettingPageState extends State<SettingPage> {
                     : Text(item.subtitle!, style: subTitleStyle),
               ),
             ),
+        // 定制版：把「学习白名单」提到设置主页一级入口（改动需家长密码）
         ListTile(
-          onTap: () => LoginPageController.switchAccountDialog(context),
-          leading: const Icon(Icons.switch_account_outlined),
-          title: Text('切换账号', style: titleStyle),
-        ),
-        Obx(
-          () => _noAccount.value
-              ? const SizedBox.shrink()
-              : ListTile(
-                  leading: const Icon(Icons.logout_outlined),
-                  onTap: () => _logoutDialog(context),
-                  title: Text('退出登录', style: titleStyle),
-                ),
+          leading: const Icon(Icons.school_outlined),
+          title: Text('学习白名单', style: titleStyle),
+          subtitle: const Text('搜索白名单词库 / 白名单模式开关'),
+          onTap: () {
+            checkParentPassword(context).then((ok) {
+              if (ok) Get.to(() => const StudyWhitelistPage());
+            });
+          },
         ),
         ListTile(
           tileColor: _getTileColor(theme, _items.last.type),
