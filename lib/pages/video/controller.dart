@@ -413,14 +413,6 @@ class VideoDetailController extends GetxController
           ? 1
           : 0,
     );
-    // 定制版：启动本地「真实观看时长」累计（每 5 秒一次，仅 playing 时累加）
-    if (cid.value != 0) {
-      plPlayerController.startWatchTime(cid.value);
-    }
-    // 定制版：分P 切换时同步统计对象（见 1136 行附近 lastCid 处理）
-    cid.listen((v) {
-      if (v != 0) plPlayerController.startWatchTime(v);
-    });
   }
 
   Future<void> getMediaList({

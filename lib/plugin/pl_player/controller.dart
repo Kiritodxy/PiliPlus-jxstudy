@@ -15,7 +15,6 @@ import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/user/danmaku_rule.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
-import 'package:PiliPlus/models_new/history/watch_time.dart';
 import 'package:PiliPlus/models_new/video/video_shot/data.dart';
 import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
 import 'package:PiliPlus/pages/sponsor_block/block_mixin.dart';
@@ -149,39 +148,6 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   VideoType _videoType = VideoType.ugc;
   int _heartDuration = 0;
 
-  // 定制版：本地「真实观看时长」累计计时器。
-  // 每 5 秒在 playing 状态下累加一次，暂停/缓冲/seek 不计入；
-  // 时长按 cid 维度累计到 GStorage.watchTime（历史页据此显示真实观看时长）。
-  Timer? _watchTimeTimer;
-  int _watchTimeCid = 0;
-
-  /// 开始统计某视频的真实观看时长（进入播放时调用）
-  void startWatchTime(int cid) {
-    _stopWatchTime();
-    _watchTimeCid = cid;
-    if (cid != 0) {
-      _watchTimeTimer = Timer.periodic(
-        const Duration(seconds: 5),
-        (_) => _tickWatchTime(),
-      );
-    }
-  }
-
-  void _tickWatchTime() {
-    if (!playerStatus.isPlaying || _watchTimeCid == 0) return;
-    WatchTime.add(_watchTimeCid, 5000);
-  }
-
-  /// 停止统计并把不足一个周期的零头补上（避免丢失最后几秒）
-  void _stopWatchTime() {
-    _watchTimeTimer?.cancel();
-    _watchTimeTimer = null;
-  }
-
-  void stopWatchTime() {
-    _stopWatchTime();
-    _watchTimeCid = 0;
-  }
 
   int? width;
   int? height;
@@ -1711,7 +1677,6 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   void dispose() {
     // 每次减1，最后销毁
-    _stopWatchTime(); // 定制版：停止真实观看时长累计
     resetScreenRotation();
     cancelLongPressTimer();
     _cancelSubForSeek();
