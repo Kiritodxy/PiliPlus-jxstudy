@@ -488,9 +488,11 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   late final horizontalSeasonPanel = Pref.horizontalSeasonPanel;
   late final preInitPlayer = Pref.preInitPlayer;
-  late final showRelatedVideo = Pref.showRelatedVideo;
-  late final showVideoReply = Pref.showVideoReply;
-  late final showBangumiReply = Pref.showBangumiReply;
+  // 定制版：视频页底部相关推荐、评论区一律不显示
+  // （置为 false 而非读 Pref，确保没有设置项可以打开）
+  late final showRelatedVideo = false;
+  late final showVideoReply = false;
+  late final showBangumiReply = false;
   late final reverseFromFirst = Pref.reverseFromFirst;
   late final horizontalPreview = Pref.horizontalPreview;
   late final showDmChart = Pref.showDmChart;

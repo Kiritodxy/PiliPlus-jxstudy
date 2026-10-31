@@ -101,6 +101,8 @@ class _SettingPageState extends State<SettingPage> {
       appBar: AppBar(
         title: _isPortrait ? const Text('设置') : Text(_type.title),
       ),
+      // 定制版：设置页也叠加动态粒子背景
+      particle: true,
       body: ViewSafeArea(
         child: _isPortrait
             ? _buildList(theme)

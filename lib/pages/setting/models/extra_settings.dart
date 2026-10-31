@@ -92,25 +92,7 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.showViewPoints,
     defaultVal: true,
   ),
-  const SwitchModel(
-    title: '视频页显示相关视频',
-    leading: Icon(MdiIcons.motionPlayOutline),
-    setKey: SettingBoxKey.showRelatedVideo,
-    defaultVal: true,
-  ),
   // 定制版：「学习白名单」已移到设置主页一级入口
-  const SwitchModel(
-    title: '显示视频评论（定制版：仅可查看，不能发表/回复）',
-    leading: Icon(MdiIcons.commentTextOutline),
-    setKey: SettingBoxKey.showVideoReply,
-    defaultVal: true,
-  ),
-  const SwitchModel(
-    title: '显示番剧评论（定制版：仅可查看，不能发表/回复）',
-    leading: Icon(MdiIcons.commentTextOutline),
-    setKey: SettingBoxKey.showBangumiReply,
-    defaultVal: true,
-  ),
   const SwitchModel(
     title: '默认展开视频简介',
     leading: Icon(Icons.expand_more),
