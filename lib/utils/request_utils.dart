@@ -537,6 +537,9 @@ abstract final class RequestUtils {
           gt: gt,
         );
       gaiaVgateValidate();
+    } else {
+      // 定制版：用户关闭验证码 / 验证码加载失败时，明确提示可重试
+      SmartDialog.showToast('未完成验证，请重新搜索');
     }
   }
 

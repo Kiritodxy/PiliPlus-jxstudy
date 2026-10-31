@@ -5,6 +5,7 @@ import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/plugin/linux_webview.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -36,14 +37,19 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
         'var C,S,T,t;'
         'T=()=>{if(C&&S&&!t){t=Geetest(C).onSuccess(()=>R("success",t.getValidate())).onError(o=>R("error",o)).onClose(o=>R("close",o));t.onReady(()=>t.verify())}};'
         'geetest_$ts=(d)=>{'
-        'if(!d||d.status!="success"){R("error",JSON.stringify(d));return};'
+        'if(!d||d.status!="success"){'
+        'F("验证码加载失败（"+((d&&(d.error_code||d.error))||"?")+"）\\n请点右上角关闭后重试");'
+        'R("error",JSON.stringify(d));return};'
         'C=Object.assign({gt:"$gt",challenge:"$challenge",offline:false,new_captcha:true,product:"bind",width:"100%",https:true,protocol:"https://"},d.data);T()'
         '};'
         'G=()=>{S=1;T()};'
-        'E=()=>{document.getElementById("E").textContent="验证码加载失败";R("error","geetest script load failed")}';
+        'F=(m)=>{var e=document.getElementById("E");if(e){e.textContent=m;e.style.display="flex"}};'
+        'E=()=>{F("验证码资源加载失败\\n请检查网络后重试");R("error","geetest script load failed")};'
+        'setTimeout(()=>{if(!t){F("验证码加载超时\\n请点右上角关闭后重试");R("error","geetest timeout")}},10000);';
 
     return '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width"></head>'
-        '<style>#E{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:red}</style>'
+        '<style>#E{position:fixed;inset:0;display:none;align-items:center;justify-content:center;'
+        'color:#c0392b;font-size:15px;line-height:1.7;text-align:center;white-space:pre-line;padding:24px}</style>'
         '<body><div id="E"></div>'
         '<script>'
         '${Platform.isLinux ? "R=(n,o)=>window.webkit.messageHandlers.msgToNative.postMessage(n+':'+JSON.stringify(o))" : "R=(n,o)=>window.flutter_inappwebview?.callHandler(n,o)"};$js'
@@ -102,7 +108,8 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
             userAgent: BrowserUa.mob,
             mixedContentMode: .MIXED_CONTENT_ALWAYS_ALLOW,
 
-            incognito: true,
+            // 定制版：极验在 incognito + initialData 组合下会出现渲染空白，
+            // 这里去掉 incognito（无登录态，不影响隐私），并开启存储/缓存
             allowFileAccess: false,
             allowsLinkPreview: false,
             allowContentAccess: false,
@@ -113,10 +120,10 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
             saveFormData: false,
             safeBrowsingEnabled: false,
             isFraudulentWebsiteWarningEnabled: false,
-            domStorageEnabled: false,
-            databaseEnabled: false,
-            cacheEnabled: false,
-            cacheMode: .LOAD_NO_CACHE,
+            domStorageEnabled: true,
+            databaseEnabled: true,
+            cacheEnabled: true,
+            cacheMode: .LOAD_DEFAULT,
 
             horizontalScrollBarEnabled: false,
             verticalScrollBarEnabled: false,
@@ -125,6 +132,14 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
             pageZoom: Platform.isIOS ? 3 : 1,
           ),
           initialData: InAppWebViewInitialData(data: html),
+          // 定制版：把 WebView 内部错误打印出来，便于定位白屏
+          onReceivedError: (ctr, req, err) {
+            debugPrint('geetest onReceivedError: ${err.type} ${err.description}');
+            SmartDialog.showToast('验证码加载失败：${err.description}');
+          },
+          onConsoleMessage: (ctr, msg) {
+            debugPrint('geetest console: ${msg.message}');
+          },
           onWebViewCreated: (ctr) {
             ctr
               ..addJavaScriptHandler(

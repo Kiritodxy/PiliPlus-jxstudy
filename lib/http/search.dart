@@ -104,7 +104,7 @@ abstract final class SearchHttp {
         final vVoucher = dataData['v_voucher'];
         if (vVoucher != null) {
           RequestUtils.validate(vVoucher, onSuccess);
-          return const Error('触发风控');
+          return const Error('触发风控，请稍后重试');
         }
         try {
           return Success(
